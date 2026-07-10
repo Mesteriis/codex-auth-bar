@@ -4,6 +4,62 @@ import Testing
 @testable import CodexAuthCore
 
 struct FeatureServicesTests {
+    @Test func importsAPIKeyUsingVerifiedIdentityWithoutRegistrySecret() async throws {
+        let fixture = try FeatureFixture()
+        let source = fixture.root.appending(path: "api-key.json")
+        try Data(#"{"auth_mode":"apikey","OPENAI_API_KEY":"sk-synthetic-test"}"#.utf8).write(to: source)
+        let repository = AccountRepository(
+            home: fixture.home,
+            apiKeyIdentityResolver: StubAPIKeyResolver(identity: APIKeyIdentity(id: "api-user", email: "KEY@Example.com"))
+        )
+
+        let report = try await repository.importAccounts(ImportRequest(source: source))
+        let key = try #require(report.importedAccountKeys.first)
+        let state = try await repository.state(refresh: .stored)
+        let encodedRegistry = try RegistryCodec.encode(state.registry)
+
+        #expect(key.rawValue.hasPrefix("apikey::api-user::"))
+        #expect(state.registry.accounts.first?.email == "key@example.com")
+        #expect(state.registry.accounts.first?.authMode == .apiKey)
+        #expect(!String(decoding: encodedRegistry, as: UTF8.self).contains("sk-synthetic-test"))
+        #expect(String(decoding: try Data(contentsOf: fixture.home.snapshot(for: key)), as: UTF8.self).contains("sk-synthetic-test"))
+    }
+
+    @Test func accountNameRefreshUpdatesAndClearsOnlyMatchingUserScope() async throws {
+        let fixture = try FeatureFixture()
+        var first = record("team-1", remaining: 80, plan: .team)
+        var second = record("team-2", remaining: 80, plan: .team)
+        var outside = record("outside", remaining: 80, plan: .team)
+        first.accountName = nil
+        second.accountName = "Old name"
+        outside.chatGPTUserID = "other-user"
+        outside.accountName = "Keep me"
+        let store = RegistryStore(home: fixture.home)
+        let loaded = try await store.load()
+        _ = try await store.commit(RegistryV4(activeAccountKey: first.accountKey, accounts: [first, second, outside]), expected: loaded.fingerprint)
+        let repository = AccountRepository(home: fixture.home, store: store)
+
+        try await repository.refreshAccountNames(using: StubUsageFetcher(names: ["team-1": "Production"]))
+        let state = try await repository.state(refresh: .stored)
+
+        #expect(state.registry.accounts.first(where: { $0.accountKey == first.accountKey })?.accountName == "Production")
+        #expect(state.registry.accounts.first(where: { $0.accountKey == second.accountKey })?.accountName == nil)
+        #expect(state.registry.accounts.first(where: { $0.accountKey == outside.accountKey })?.accountName == "Keep me")
+    }
+
+    @Test func stateSyncsExternallyChangedAuthIntoRegistry() async throws {
+        let fixture = try FeatureFixture()
+        let auth = try authData(email: "external@example.com", userID: "external-user", accountID: "external-account")
+        try auth.write(to: fixture.home.auth)
+        let repository = AccountRepository(home: fixture.home)
+
+        let state = try await repository.state(refresh: .stored)
+        let record = try #require(state.registry.accounts.first)
+
+        #expect(record.accountKey == AccountKey("external-user::external-account"))
+        #expect(state.registry.activeAccountKey == record.accountKey)
+        #expect(try Data(contentsOf: fixture.home.snapshot(for: record.accountKey)) == auth)
+    }
     @Test func cpaConversionPreservesTokens() throws {
         let idToken = makeJWT(email: "import@example.com", userID: "u", accountID: "a")
         let cpa = try JSONSerialization.data(withJSONObject: [
@@ -117,6 +173,17 @@ struct FeatureServicesTests {
             try CodextVerifier.verify(file: file, artifact: manifest)
         }
     }
+}
+
+private struct StubAPIKeyResolver: APIKeyIdentityResolving {
+    let identity: APIKeyIdentity
+    func identity(apiKey: String) async throws -> APIKeyIdentity { identity }
+}
+
+private struct StubUsageFetcher: UsageFetching {
+    let names: [String: String]
+    func usage(for account: AccountRecord) async -> UsageFetchResult { .missingAuth }
+    func accountNames(for scope: UserScope) async -> AccountNameFetchResult { .success(names) }
 }
 
 private struct FeatureFixture {

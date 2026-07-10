@@ -72,13 +72,23 @@ public actor ChatGPTUsageService: UsageFetching {
     }
 }
 
+public struct APIKeyIdentity: Equatable, Sendable {
+    public var id: String
+    public var email: String
+    public init(id: String, email: String) { self.id = id; self.email = email.lowercased() }
+}
+
+public protocol APIKeyIdentityResolving: Sendable {
+    func identity(apiKey: String) async throws -> APIKeyIdentity
+}
+
 public enum APIKeyIdentityError: Error, Sendable { case invalidResponse, status(Int) }
 
-public actor APIKeyIdentityService {
+public actor APIKeyIdentityService: APIKeyIdentityResolving {
     private let session: URLSession
     public init(session: URLSession = .shared) { self.session = session }
 
-    public func identity(apiKey: String) async throws -> (id: String, email: String) {
+    public func identity(apiKey: String) async throws -> APIKeyIdentity {
         var request = URLRequest(url: URL(string: "https://api.openai.com/v1/me")!)
         request.setValue("Bearer \(apiKey)", forHTTPHeaderField: "Authorization")
         let (data, response) = try await session.data(for: request)
@@ -87,6 +97,6 @@ public actor APIKeyIdentityService {
         guard let object = try JSONSerialization.jsonObject(with: data) as? [String: Any],
               let id = object["id"] as? String, let email = object["email"] as? String
         else { throw APIKeyIdentityError.invalidResponse }
-        return (id, email.lowercased())
+        return APIKeyIdentity(id: id, email: email)
     }
 }

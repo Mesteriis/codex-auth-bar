@@ -91,19 +91,20 @@ public extension AccountRepository {
                 case .standard, .purge: data = originalData
                 }
                 let info = try AuthParser.parse(data)
-                guard info.authMode == .chatgpt, let key = info.accountKey,
-                      let accountID = info.chatGPTAccountID, let userID = info.chatGPTUserID,
-                      let email = info.email
-                else { throw CPAError.unsupportedAPIKey }
-
-                let existingIndex = loaded.registry.accounts.firstIndex { $0.accountKey == key }
-                if let existingIndex {
-                    loaded.registry.accounts[existingIndex].email = email
-                    loaded.registry.accounts[existingIndex].plan = info.plan
-                    loaded.registry.accounts[existingIndex].authMode = info.authMode
-                    if !applyAlias.isEmpty { loaded.registry.accounts[existingIndex].alias = applyAlias }
+                let key: AccountKey
+                let incoming: AccountRecord
+                if info.authMode == .apiKey {
+                    guard let apiKey = info.openAIAPIKey else { throw AuthError.missingAccessToken }
+                    let identity = try await apiKeyIdentityResolver.identity(apiKey: apiKey)
+                    key = Self.apiKeyAccountKey(identityID: identity.id, apiKey: apiKey)
+                    incoming = Self.apiKeyRecord(key: key, identity: identity, apiKey: apiKey)
                 } else {
-                    loaded.registry.accounts.append(AccountRecord(
+                    guard let resolvedKey = info.accountKey,
+                          let accountID = info.chatGPTAccountID, let userID = info.chatGPTUserID,
+                          let email = info.email
+                    else { throw AuthError.missingUserID }
+                    key = resolvedKey
+                    incoming = AccountRecord(
                         accountKey: key,
                         chatGPTAccountID: accountID,
                         chatGPTUserID: userID,
@@ -111,11 +112,24 @@ public extension AccountRepository {
                         alias: applyAlias,
                         plan: info.plan,
                         authMode: info.authMode
-                    ))
+                    )
+                }
+
+                let existingIndex = loaded.registry.accounts.firstIndex { $0.accountKey == key }
+                if let existingIndex {
+                    loaded.registry.accounts[existingIndex].email = incoming.email
+                    loaded.registry.accounts[existingIndex].plan = incoming.plan
+                    loaded.registry.accounts[existingIndex].authMode = incoming.authMode
+                    loaded.registry.accounts[existingIndex].accountName = incoming.accountName ?? loaded.registry.accounts[existingIndex].accountName
+                    if !applyAlias.isEmpty { loaded.registry.accounts[existingIndex].alias = applyAlias }
+                } else {
+                    var record = incoming
+                    if !applyAlias.isEmpty { record.alias = applyAlias }
+                    loaded.registry.accounts.append(record)
                 }
                 try SecureFiles.atomicWrite(data, to: home.snapshot(for: key))
                 imported.append(key)
-                events.append(ImportEvent(source: name, outcome: existingIndex == nil ? .imported : .updated, detail: email))
+                events.append(ImportEvent(source: name, outcome: existingIndex == nil ? .imported : .updated, detail: incoming.email))
             } catch {
                 events.append(ImportEvent(source: name, outcome: .skipped, detail: String(describing: error)))
             }

@@ -36,14 +36,123 @@ public enum AccountError: Error, Equatable, Sendable {
 public actor AccountRepository {
     public let home: CodexHome
     let store: RegistryStore
+    let apiKeyIdentityResolver: any APIKeyIdentityResolving
 
-    public init(home: CodexHome, store: RegistryStore? = nil) {
+    public init(
+        home: CodexHome,
+        store: RegistryStore? = nil,
+        apiKeyIdentityResolver: any APIKeyIdentityResolving = APIKeyIdentityService()
+    ) {
         self.home = home
         self.store = store ?? RegistryStore(home: home)
+        self.apiKeyIdentityResolver = apiKeyIdentityResolver
     }
 
     public func state(refresh: RefreshPolicy) async throws -> AccountState {
-        AccountState(registry: try await store.load().registry)
+        _ = try? await syncActiveAuth()
+        return AccountState(registry: try await store.load().registry)
+    }
+
+    @discardableResult
+    public func syncActiveAuth() async throws -> Bool {
+        guard FileManager.default.fileExists(atPath: home.auth.path) else { return false }
+        let data = try Data(contentsOf: home.auth)
+        guard let info = try? AuthParser.parse(data) else { return false }
+
+        for _ in 0..<3 {
+            let loaded = try await store.load()
+            var registry = loaded.registry
+            let record: AccountRecord
+            let key: AccountKey
+
+            if info.authMode == .apiKey {
+                if let existing = registry.accounts.first(where: { account in
+                    guard account.authMode == .apiKey,
+                          let snapshot = try? Data(contentsOf: home.snapshot(for: account.accountKey))
+                    else { return false }
+                    return snapshot == data
+                }) {
+                    record = existing
+                    key = existing.accountKey
+                } else {
+                    guard let apiKey = info.openAIAPIKey else { return false }
+                    let identity = try await apiKeyIdentityResolver.identity(apiKey: apiKey)
+                    key = Self.apiKeyAccountKey(identityID: identity.id, apiKey: apiKey)
+                    record = Self.apiKeyRecord(key: key, identity: identity, apiKey: apiKey)
+                }
+            } else {
+                guard let resolvedKey = info.accountKey,
+                      let accountID = info.chatGPTAccountID,
+                      let userID = info.chatGPTUserID,
+                      let email = info.email
+                else { return false }
+                key = resolvedKey
+                record = AccountRecord(
+                    accountKey: key,
+                    chatGPTAccountID: accountID,
+                    chatGPTUserID: userID,
+                    email: email,
+                    plan: info.plan,
+                    authMode: info.authMode
+                )
+            }
+
+            let existingIndex = registry.accounts.firstIndex { $0.accountKey == key }
+            var changed = registry.activeAccountKey != key
+            if let existingIndex {
+                let existing = registry.accounts[existingIndex]
+                registry.accounts[existingIndex].email = record.email
+                registry.accounts[existingIndex].plan = record.plan
+                registry.accounts[existingIndex].authMode = record.authMode
+                registry.accounts[existingIndex].chatGPTAccountID = record.chatGPTAccountID
+                registry.accounts[existingIndex].chatGPTUserID = record.chatGPTUserID
+                changed = changed || existing.email != record.email || existing.plan != record.plan || existing.authMode != record.authMode
+            } else {
+                registry.accounts.append(record)
+                changed = true
+            }
+            let snapshot = home.snapshot(for: key)
+            if (try? Data(contentsOf: snapshot)) != data {
+                try SecureFiles.atomicWrite(data, to: snapshot)
+                changed = true
+            }
+            registry.activeAccountKey = key
+            registry.activeAccountActivatedAtMilliseconds = Int64(Date().timeIntervalSince1970 * 1_000)
+            guard changed else { return false }
+            do {
+                _ = try await store.commit(registry, expected: loaded.fingerprint)
+                return true
+            } catch StorageError.concurrentModification { continue }
+        }
+        throw AccountError.concurrentModification
+    }
+
+    public func refreshAccountNames(using fetcher: any UsageFetching) async throws {
+        for _ in 0..<3 {
+            let loaded = try await store.load()
+            guard let activeKey = loaded.registry.activeAccountKey,
+                  let active = loaded.registry.accounts.first(where: { $0.accountKey == activeKey })
+            else { return }
+            let scoped = loaded.registry.accounts.filter { $0.chatGPTUserID == active.chatGPTUserID }
+            guard scoped.count > 1,
+                  scoped.contains(where: { $0.resolvedPlan == .team || $0.resolvedPlan == .business })
+            else { return }
+            guard case let .success(names) = await fetcher.accountNames(for: UserScope(chatGPTUserID: active.chatGPTUserID, accounts: scoped)) else { return }
+            var registry = loaded.registry
+            for index in registry.accounts.indices where registry.accounts[index].chatGPTUserID == active.chatGPTUserID {
+                let record = registry.accounts[index]
+                if let name = names[record.chatGPTAccountID], !name.isEmpty {
+                    registry.accounts[index].accountName = name
+                } else if record.resolvedPlan == .team || record.resolvedPlan == .business || record.accountName != nil {
+                    registry.accounts[index].accountName = nil
+                }
+            }
+            do {
+                _ = try await store.commit(registry, expected: loaded.fingerprint)
+                return
+            } catch StorageError.concurrentModification { continue }
+        }
+        throw AccountError.concurrentModification
     }
 
     public func switchAccount(to key: AccountKey) async throws -> SwitchReceipt {
@@ -144,5 +253,23 @@ public actor AccountRepository {
             } catch StorageError.concurrentModification { continue }
         }
         throw AccountError.concurrentModification
+    }
+
+    static func apiKeyAccountKey(identityID: String, apiKey: String) -> AccountKey {
+        let digest = SHA256.hash(data: Data(apiKey.utf8)).map { String(format: "%02x", $0) }.joined()
+        return AccountKey("apikey::\(identityID)::\(digest)")
+    }
+
+    static func apiKeyRecord(key: AccountKey, identity: APIKeyIdentity, apiKey: String) -> AccountRecord {
+        let digest = SHA256.hash(data: Data(apiKey.utf8)).map { String(format: "%02x", $0) }.joined()
+        let label = "API key \(digest.prefix(5))…\(digest.suffix(4))"
+        return AccountRecord(
+            accountKey: key,
+            chatGPTAccountID: identity.id,
+            chatGPTUserID: identity.id,
+            email: identity.email,
+            accountName: label,
+            authMode: .apiKey
+        )
     }
 }
