@@ -1,0 +1,33 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+      - name: Core tests
+        run: swift test --package-path Packages/CodexAuthCore
+      - name: App tests
+        run: >-
+          xcodebuild test -project CodexAuthBar.xcodeproj -scheme CodexAuthBar
+          -destination 'platform=macOS' -skip-testing:CodexAuthBarUITests
+          CODE_SIGNING_ALLOWED=NO
+      - name: Analyze
+        run: >-
+          xcodebuild analyze -project CodexAuthBar.xcodeproj -scheme CodexAuthBar
+          -destination 'platform=macOS' CODE_SIGNING_ALLOWED=NO
+      - name: Universal unsigned build
+        run: >-
+          xcodebuild build -project CodexAuthBar.xcodeproj -scheme CodexAuthBar
+          -configuration Release -destination 'generic/platform=macOS'
+          ARCHS='arm64 x86_64' ONLY_ACTIVE_ARCH=NO CODE_SIGNING_ALLOWED=NO
+      - name: Secret fixture guard
+        run: '! rg -n "sk-[A-Za-z0-9]{20,}|eyJ[A-Za-z0-9_-]{30,}" Packages/CodexAuthCore/Tests'

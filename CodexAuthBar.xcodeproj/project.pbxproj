@@ -1,0 +1,112 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		100000000000000000000001 /* CodexAuthBarApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 200000000000000000000001 /* CodexAuthBarApp.swift */; };
+		100000000000000000000002 /* AppModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 200000000000000000000002 /* AppModel.swift */; };
+		100000000000000000000003 /* CodexProcessController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 200000000000000000000003 /* CodexProcessController.swift */; };
+		100000000000000000000004 /* MenuBarPopover.swift in Sources */ = {isa = PBXBuildFile; fileRef = 200000000000000000000004 /* MenuBarPopover.swift */; };
+		100000000000000000000005 /* ManagementView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 200000000000000000000005 /* ManagementView.swift */; };
+		100000000000000000000006 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 200000000000000000000006 /* SettingsView.swift */; };
+		100000000000000000000007 /* CodexAuthCore in Frameworks */ = {isa = PBXBuildFile; productRef = 900000000000000000000002 /* CodexAuthCore */; };
+		100000000000000000000008 /* CodexAuthBarTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 200000000000000000000009 /* CodexAuthBarTests.swift */; };
+		100000000000000000000009 /* CodexAuthBarUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 20000000000000000000000A /* CodexAuthBarUITests.swift */; };
+		10000000000000000000000A /* CodextManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 20000000000000000000000D /* CodextManager.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		700000000000000000000001 = {isa = PBXContainerItemProxy; containerPortal = 500000000000000000000001 /* Project object */; proxyType = 1; remoteGlobalIDString = 300000000000000000000001; remoteInfo = CodexAuthBar; };
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		200000000000000000000001 /* CodexAuthBarApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CodexAuthBarApp.swift; sourceTree = "<group>"; };
+		200000000000000000000002 /* AppModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppModel.swift; sourceTree = "<group>"; };
+		200000000000000000000003 /* CodexProcessController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CodexProcessController.swift; sourceTree = "<group>"; };
+		200000000000000000000004 /* MenuBarPopover.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MenuBarPopover.swift; sourceTree = "<group>"; };
+		200000000000000000000005 /* ManagementView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ManagementView.swift; sourceTree = "<group>"; };
+		200000000000000000000006 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
+		200000000000000000000007 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		200000000000000000000008 /* CodexAuthBar.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = CodexAuthBar.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		200000000000000000000009 /* CodexAuthBarTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CodexAuthBarTests.swift; sourceTree = "<group>"; };
+		20000000000000000000000A /* CodexAuthBarUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CodexAuthBarUITests.swift; sourceTree = "<group>"; };
+		20000000000000000000000B /* CodexAuthBarTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = CodexAuthBarTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		20000000000000000000000C /* CodexAuthBarUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = CodexAuthBarUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		20000000000000000000000D /* CodextManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CodextManager.swift; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		400000000000000000000001 = {isa = PBXFrameworksBuildPhase; buildActionMask = 2147483647; files = (100000000000000000000007 /* CodexAuthCore in Frameworks */,); runOnlyForDeploymentPostprocessing = 0; };
+		400000000000000000000002 = {isa = PBXFrameworksBuildPhase; buildActionMask = 2147483647; files = (); runOnlyForDeploymentPostprocessing = 0; };
+		400000000000000000000003 = {isa = PBXFrameworksBuildPhase; buildActionMask = 2147483647; files = (); runOnlyForDeploymentPostprocessing = 0; };
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		600000000000000000000001 = {isa = PBXGroup; children = (600000000000000000000003 /* CodexAuthBar */, 600000000000000000000007 /* CodexAuthBarTests */, 600000000000000000000008 /* CodexAuthBarUITests */, 600000000000000000000002 /* Products */); sourceTree = "<group>"; };
+		600000000000000000000002 /* Products */ = {isa = PBXGroup; children = (200000000000000000000008 /* CodexAuthBar.app */, 20000000000000000000000B /* CodexAuthBarTests.xctest */, 20000000000000000000000C /* CodexAuthBarUITests.xctest */); name = Products; sourceTree = "<group>"; };
+		600000000000000000000003 /* CodexAuthBar */ = {isa = PBXGroup; children = (600000000000000000000004 /* App */, 600000000000000000000005 /* Services */, 600000000000000000000006 /* Views */, 600000000000000000000009 /* Resources */); path = CodexAuthBar; sourceTree = "<group>"; };
+		600000000000000000000004 /* App */ = {isa = PBXGroup; children = (200000000000000000000001, 200000000000000000000002); path = App; sourceTree = "<group>"; };
+		600000000000000000000005 /* Services */ = {isa = PBXGroup; children = (200000000000000000000003, 20000000000000000000000D); path = Services; sourceTree = "<group>"; };
+		600000000000000000000006 /* Views */ = {isa = PBXGroup; children = (200000000000000000000004, 200000000000000000000005, 200000000000000000000006); path = Views; sourceTree = "<group>"; };
+		600000000000000000000007 /* CodexAuthBarTests */ = {isa = PBXGroup; children = (200000000000000000000009); path = CodexAuthBarTests; sourceTree = "<group>"; };
+		600000000000000000000008 /* CodexAuthBarUITests */ = {isa = PBXGroup; children = (20000000000000000000000A); path = CodexAuthBarUITests; sourceTree = "<group>"; };
+		600000000000000000000009 /* Resources */ = {isa = PBXGroup; children = (200000000000000000000007); path = Resources; sourceTree = "<group>"; };
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		300000000000000000000001 /* CodexAuthBar */ = {isa = PBXNativeTarget; buildConfigurationList = 800000000000000000000002; buildPhases = (400000000000000000000004, 400000000000000000000001, 400000000000000000000005); buildRules = (); dependencies = (); name = CodexAuthBar; packageProductDependencies = (900000000000000000000002); productName = CodexAuthBar; productReference = 200000000000000000000008; productType = "com.apple.product-type.application"; };
+		300000000000000000000002 /* CodexAuthBarTests */ = {isa = PBXNativeTarget; buildConfigurationList = 800000000000000000000003; buildPhases = (400000000000000000000006, 400000000000000000000002, 400000000000000000000007); buildRules = (); dependencies = (700000000000000000000002); name = CodexAuthBarTests; productName = CodexAuthBarTests; productReference = 20000000000000000000000B; productType = "com.apple.product-type.bundle.unit-test"; };
+		300000000000000000000003 /* CodexAuthBarUITests */ = {isa = PBXNativeTarget; buildConfigurationList = 800000000000000000000004; buildPhases = (400000000000000000000008, 400000000000000000000003, 400000000000000000000009); buildRules = (); dependencies = (700000000000000000000002); name = CodexAuthBarUITests; productName = CodexAuthBarUITests; productReference = 20000000000000000000000C; productType = "com.apple.product-type.bundle.ui-testing"; };
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		500000000000000000000001 /* Project object */ = {isa = PBXProject; attributes = {BuildIndependentTargetsInParallel = 1; LastSwiftUpdateCheck = 2660; LastUpgradeCheck = 2660; TargetAttributes = {300000000000000000000001 = {CreatedOnToolsVersion = 26.0;}; 300000000000000000000002 = {CreatedOnToolsVersion = 26.0; TestTargetID = 300000000000000000000001;}; 300000000000000000000003 = {CreatedOnToolsVersion = 26.0; TestTargetID = 300000000000000000000001;};};}; buildConfigurationList = 800000000000000000000001; compatibilityVersion = "Xcode 16.0"; developmentRegion = en; hasScannedForEncodings = 0; knownRegions = (en, Base, ru); mainGroup = 600000000000000000000001; packageReferences = (900000000000000000000001); productRefGroup = 600000000000000000000002; projectDirPath = ""; projectRoot = ""; targets = (300000000000000000000001, 300000000000000000000002, 300000000000000000000003); };
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		400000000000000000000005 = {isa = PBXResourcesBuildPhase; buildActionMask = 2147483647; files = (); runOnlyForDeploymentPostprocessing = 0; };
+		400000000000000000000007 = {isa = PBXResourcesBuildPhase; buildActionMask = 2147483647; files = (); runOnlyForDeploymentPostprocessing = 0; };
+		400000000000000000000009 = {isa = PBXResourcesBuildPhase; buildActionMask = 2147483647; files = (); runOnlyForDeploymentPostprocessing = 0; };
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		400000000000000000000004 = {isa = PBXSourcesBuildPhase; buildActionMask = 2147483647; files = (100000000000000000000001, 100000000000000000000002, 100000000000000000000003, 100000000000000000000004, 100000000000000000000005, 100000000000000000000006, 10000000000000000000000A); runOnlyForDeploymentPostprocessing = 0; };
+		400000000000000000000006 = {isa = PBXSourcesBuildPhase; buildActionMask = 2147483647; files = (100000000000000000000008); runOnlyForDeploymentPostprocessing = 0; };
+		400000000000000000000008 = {isa = PBXSourcesBuildPhase; buildActionMask = 2147483647; files = (100000000000000000000009); runOnlyForDeploymentPostprocessing = 0; };
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		700000000000000000000002 = {isa = PBXTargetDependency; target = 300000000000000000000001; targetProxy = 700000000000000000000001; };
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		810000000000000000000001 = {isa = XCBuildConfiguration; buildSettings = {ALWAYS_SEARCH_USER_PATHS = NO; MACOSX_DEPLOYMENT_TARGET = 14.0; SDKROOT = macosx; SWIFT_VERSION = 6.0;}; name = Debug; };
+		810000000000000000000002 = {isa = XCBuildConfiguration; buildSettings = {ALWAYS_SEARCH_USER_PATHS = NO; MACOSX_DEPLOYMENT_TARGET = 14.0; SDKROOT = macosx; SWIFT_VERSION = 6.0;}; name = Release; };
+		810000000000000000000003 = {isa = XCBuildConfiguration; buildSettings = {CODE_SIGN_STYLE = Automatic; COMBINE_HIDPI_IMAGES = YES; CURRENT_PROJECT_VERSION = 1; ENABLE_APP_SANDBOX = NO; ENABLE_HARDENED_RUNTIME = YES; GENERATE_INFOPLIST_FILE = NO; INFOPLIST_FILE = CodexAuthBar/Resources/Info.plist; LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks"; MACOSX_DEPLOYMENT_TARGET = 14.0; MARKETING_VERSION = 0.1.0; ONLY_ACTIVE_ARCH = YES; PRODUCT_BUNDLE_IDENTIFIER = com.mesteriis.CodexAuthBar; PRODUCT_NAME = "$(TARGET_NAME)"; SWIFT_STRICT_CONCURRENCY = complete; SWIFT_VERSION = 6.0;}; name = Debug; };
+		810000000000000000000004 = {isa = XCBuildConfiguration; buildSettings = {CODE_SIGN_STYLE = Automatic; COMBINE_HIDPI_IMAGES = YES; CURRENT_PROJECT_VERSION = 1; ENABLE_APP_SANDBOX = NO; ENABLE_HARDENED_RUNTIME = YES; GENERATE_INFOPLIST_FILE = NO; INFOPLIST_FILE = CodexAuthBar/Resources/Info.plist; LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks"; MACOSX_DEPLOYMENT_TARGET = 14.0; MARKETING_VERSION = 0.1.0; PRODUCT_BUNDLE_IDENTIFIER = com.mesteriis.CodexAuthBar; PRODUCT_NAME = "$(TARGET_NAME)"; SWIFT_STRICT_CONCURRENCY = complete; SWIFT_VERSION = 6.0;}; name = Release; };
+		810000000000000000000005 = {isa = XCBuildConfiguration; buildSettings = {BUNDLE_LOADER = "$(TEST_HOST)"; CODE_SIGN_STYLE = Automatic; GENERATE_INFOPLIST_FILE = YES; MACOSX_DEPLOYMENT_TARGET = 14.0; ONLY_ACTIVE_ARCH = YES; PRODUCT_BUNDLE_IDENTIFIER = com.mesteriis.CodexAuthBarTests; PRODUCT_MODULE_NAME = CodexAuthBarTests; PRODUCT_NAME = "$(TARGET_NAME)"; SWIFT_VERSION = 6.0; TEST_HOST = "$(BUILT_PRODUCTS_DIR)/CodexAuthBar.app/Contents/MacOS/CodexAuthBar";}; name = Debug; };
+		810000000000000000000006 = {isa = XCBuildConfiguration; buildSettings = {BUNDLE_LOADER = "$(TEST_HOST)"; CODE_SIGN_STYLE = Automatic; GENERATE_INFOPLIST_FILE = YES; MACOSX_DEPLOYMENT_TARGET = 14.0; PRODUCT_BUNDLE_IDENTIFIER = com.mesteriis.CodexAuthBarTests; PRODUCT_MODULE_NAME = CodexAuthBarTests; PRODUCT_NAME = "$(TARGET_NAME)"; SWIFT_VERSION = 6.0; TEST_HOST = "$(BUILT_PRODUCTS_DIR)/CodexAuthBar.app/Contents/MacOS/CodexAuthBar";}; name = Release; };
+		810000000000000000000007 = {isa = XCBuildConfiguration; buildSettings = {CODE_SIGN_STYLE = Automatic; GENERATE_INFOPLIST_FILE = YES; MACOSX_DEPLOYMENT_TARGET = 14.0; ONLY_ACTIVE_ARCH = YES; PRODUCT_BUNDLE_IDENTIFIER = com.mesteriis.CodexAuthBarUITests; PRODUCT_MODULE_NAME = CodexAuthBarUITests; PRODUCT_NAME = "$(TARGET_NAME)"; SWIFT_VERSION = 6.0; TEST_TARGET_NAME = CodexAuthBar;}; name = Debug; };
+		810000000000000000000008 = {isa = XCBuildConfiguration; buildSettings = {CODE_SIGN_STYLE = Automatic; GENERATE_INFOPLIST_FILE = YES; MACOSX_DEPLOYMENT_TARGET = 14.0; PRODUCT_BUNDLE_IDENTIFIER = com.mesteriis.CodexAuthBarUITests; PRODUCT_MODULE_NAME = CodexAuthBarUITests; PRODUCT_NAME = "$(TARGET_NAME)"; SWIFT_VERSION = 6.0; TEST_TARGET_NAME = CodexAuthBar;}; name = Release; };
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		800000000000000000000001 = {isa = XCConfigurationList; buildConfigurations = (810000000000000000000001, 810000000000000000000002); defaultConfigurationIsVisible = 0; defaultConfigurationName = Release; };
+		800000000000000000000002 = {isa = XCConfigurationList; buildConfigurations = (810000000000000000000003, 810000000000000000000004); defaultConfigurationIsVisible = 0; defaultConfigurationName = Release; };
+		800000000000000000000003 = {isa = XCConfigurationList; buildConfigurations = (810000000000000000000005, 810000000000000000000006); defaultConfigurationIsVisible = 0; defaultConfigurationName = Release; };
+		800000000000000000000004 = {isa = XCConfigurationList; buildConfigurations = (810000000000000000000007, 810000000000000000000008); defaultConfigurationIsVisible = 0; defaultConfigurationName = Release; };
+/* End XCConfigurationList section */
+
+/* Begin XCLocalSwiftPackageReference section */
+		900000000000000000000001 = {isa = XCLocalSwiftPackageReference; relativePath = Packages/CodexAuthCore; };
+/* End XCLocalSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		900000000000000000000002 /* CodexAuthCore */ = {isa = XCSwiftPackageProductDependency; package = 900000000000000000000001; productName = CodexAuthCore; };
+/* End XCSwiftPackageProductDependency section */
+	};
+	rootObject = 500000000000000000000001 /* Project object */;
+}
