@@ -32,14 +32,21 @@ actor CodextManager {
         try FileManager.default.createDirectory(at: base, withIntermediateDirectories: true, attributes: [.posixPermissions: 0o700])
         let archive = FileManager.default.temporaryDirectory.appending(path: UUID().uuidString + ".tar.gz")
         defer { try? FileManager.default.removeItem(at: archive) }
-        let (downloaded, response) = try await URLSession.shared.download(from: artifact.url)
-        guard let http = response as? HTTPURLResponse, http.statusCode == 200 else { throw CodextError.untrustedOrigin }
+        let configuration = URLSessionConfiguration.ephemeral
+        configuration.httpCookieStorage = nil
+        configuration.urlCache = nil
+        let session = URLSession(configuration: configuration)
+        let (downloaded, response) = try await session.download(from: artifact.url)
+        let allowedHosts = Set(["github.com", "objects.githubusercontent.com", "release-assets.githubusercontent.com"])
+        guard let http = response as? HTTPURLResponse,
+              http.statusCode == 200,
+              http.url?.scheme == "https",
+              http.url?.host.map({ allowedHosts.contains($0.lowercased()) }) == true
+        else { throw CodextError.untrustedOrigin }
         try FileManager.default.moveItem(at: downloaded, to: archive)
         try CodextVerifier.verify(file: archive, artifact: artifact)
         let entries = try run("/usr/bin/tar", ["-tzf", archive.path]).split(separator: "\n").map(String.init)
-        guard Set(entries) == Set(["codext", "codex-code-mode-host"]), entries.allSatisfy({ !$0.contains("..") && !$0.hasPrefix("/") }) else {
-            throw CodextError.unsafeArchive
-        }
+        try CodextArchiveValidator.validate(entries: entries)
         _ = try run("/usr/bin/tar", ["-xzf", archive.path, "-C", base.path])
         try FileManager.default.setAttributes([.posixPermissions: 0o700], ofItemAtPath: executable.path)
         try FileManager.default.setAttributes([.posixPermissions: 0o700], ofItemAtPath: base.appending(path: "codex-code-mode-host").path)

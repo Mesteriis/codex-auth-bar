@@ -7,6 +7,7 @@ enum ProcessError: LocalizedError {
     case commandFailed(String)
     case desktopDidNotTerminate
     case profileUnsupported
+    case incompatibleCredentialStore(CredentialStoreMode)
 
     var errorDescription: String? {
         switch self {
@@ -14,19 +15,51 @@ enum ProcessError: LocalizedError {
         case let .commandFailed(message): "Codex command failed: \(message)"
         case .desktopDidNotTerminate: "Codex App did not terminate; the account was not changed."
         case .profileUnsupported: "This Codex CLI does not support --profile."
+        case let .incompatibleCredentialStore(mode):
+            "Codex credential storage is \(mode.rawValue). Set cli_auth_credentials_store = \"file\" in config.toml before switching accounts. Codex Auth Bar will not change this setting automatically."
         }
     }
 }
 
+struct DiagnosticsArtifact: Sendable {
+    var stdoutURL: URL
+    var stderrURL: URL
+    var processIdentifier: pid_t
+}
+
 actor CodexProcessController: CodexProcessControlling {
     private let home: CodexHome
+    private var managedDesktopPID: pid_t?
+    private var diagnosticsProcess: Process?
     init(home: CodexHome) { self.home = home }
 
     func capabilities() async throws -> CodexCapabilities {
         let executable = try resolveExecutable()
         let version = try run(executable, ["--version"]).output.trimmingCharacters(in: .whitespacesAndNewlines)
         let help = try run(executable, ["--help"]).output
-        return CodexCapabilities(executable: executable, version: version, supportsProfiles: help.contains("--profile"), supportsDoctorJSON: help.contains("doctor"))
+        let supportsDoctor = help.contains("doctor")
+        var credentialStore: CredentialStoreMode = .unknown
+        if supportsDoctor {
+            var environment = ProcessInfo.processInfo.environment
+            environment["CODEX_HOME"] = home.root.path
+            if let report = try? run(executable, ["doctor", "--json"], environment: environment).output {
+                credentialStore = (try? DoctorReportParser.credentialStore(from: Data(report.utf8))) ?? .unknown
+            }
+        }
+        return CodexCapabilities(
+            executable: executable,
+            version: version,
+            supportsProfiles: help.contains("--profile"),
+            supportsDoctorJSON: supportsDoctor,
+            credentialStore: credentialStore
+        )
+    }
+
+    func ensureFileCredentialStore() async throws {
+        let result = try await capabilities()
+        guard !result.supportsDoctorJSON || result.credentialStore.permitsFileSwitching else {
+            throw ProcessError.incompatibleCredentialStore(result.credentialStore)
+        }
     }
 
     func performLogin(_ method: LoginMethod) async throws -> LoginArtifact {
@@ -61,12 +94,20 @@ actor CodexProcessController: CodexProcessControlling {
         await MainActor.run { !NSRunningApplication.runningApplications(withBundleIdentifier: "com.openai.codex").isEmpty }
     }
 
+    func isManagedDesktopRunning() async -> Bool {
+        guard let managedDesktopPID else { return false }
+        return await MainActor.run {
+            NSRunningApplication.runningApplications(withBundleIdentifier: "com.openai.codex")
+                .contains(where: { $0.processIdentifier == managedDesktopPID })
+        }
+    }
+
     func terminateDesktopApp(timeout: Duration) async throws {
         let apps = await MainActor.run { NSRunningApplication.runningApplications(withBundleIdentifier: "com.openai.codex") }
         for app in apps { _ = await MainActor.run { app.terminate() } }
         let deadline = ContinuousClock.now + timeout
         while ContinuousClock.now < deadline {
-            if !(await isDesktopRunning()) { return }
+            if !(await isDesktopRunning()) { managedDesktopPID = nil; return }
             try await Task.sleep(for: .milliseconds(200))
         }
         throw ProcessError.desktopDidNotTerminate
@@ -77,6 +118,63 @@ actor CodexProcessController: CodexProcessControlling {
         if let cliPath = request.cliPath { args += ["--env", "CODEX_CLI_PATH=\(cliPath.path)"] }
         args += ["-b", request.bundleIdentifier]
         _ = try run(URL(fileURLWithPath: "/usr/bin/open"), args)
+        let deadline = ContinuousClock.now + .seconds(5)
+        while ContinuousClock.now < deadline {
+            let pid = await MainActor.run {
+                NSRunningApplication.runningApplications(withBundleIdentifier: request.bundleIdentifier).first?.processIdentifier
+            }
+            if let pid {
+                managedDesktopPID = request.cliPath == nil ? nil : pid
+                return
+            }
+            try await Task.sleep(for: .milliseconds(100))
+        }
+    }
+
+    func launchDiagnostics(cliPath: URL?) async throws -> DiagnosticsArtifact {
+        guard let appURL = await MainActor.run(body: { NSWorkspace.shared.urlForApplication(withBundleIdentifier: "com.openai.codex") }),
+              let executable = Bundle(url: appURL)?.executableURL
+        else { throw ProcessError.commandFailed("Codex.app was not found") }
+        let base = try FileManager.default.url(
+            for: .applicationSupportDirectory,
+            in: .userDomainMask,
+            appropriateFor: nil,
+            create: true
+        ).appending(path: "CodexAuthBar/diagnostics", directoryHint: .isDirectory)
+        try SecureDirectory.create(base)
+        let identifier = UUID().uuidString
+        let stdoutURL = base.appending(path: "\(identifier).stdout.log")
+        let stderrURL = base.appending(path: "\(identifier).stderr.log")
+        FileManager.default.createFile(atPath: stdoutURL.path, contents: nil, attributes: [.posixPermissions: 0o600])
+        FileManager.default.createFile(atPath: stderrURL.path, contents: nil, attributes: [.posixPermissions: 0o600])
+        let stdout = try FileHandle(forWritingTo: stdoutURL)
+        let stderr = try FileHandle(forWritingTo: stderrURL)
+        let process = Process()
+        process.executableURL = executable
+        var environment = ProcessInfo.processInfo.environment
+        environment["CODEX_HOME"] = home.root.path
+        if let cliPath { environment["CODEX_CLI_PATH"] = cliPath.path }
+        process.environment = environment
+        process.standardOutput = stdout
+        process.standardError = stderr
+        process.terminationHandler = { _ in
+            try? stdout.close()
+            try? stderr.close()
+        }
+        try process.run()
+        diagnosticsProcess = process
+        managedDesktopPID = cliPath == nil ? nil : process.processIdentifier
+        return DiagnosticsArtifact(stdoutURL: stdoutURL, stderrURL: stderrURL, processIdentifier: process.processIdentifier)
+    }
+
+    func diagnosticOutput(_ artifact: DiagnosticsArtifact) throws -> String {
+        let stdout = try tail(artifact.stdoutURL, maximumBytes: 512 * 1024)
+        let stderr = try tail(artifact.stderrURL, maximumBytes: 512 * 1024)
+        return redact("STDOUT\n\(stdout)\n\nSTDERR\n\(stderr)")
+    }
+
+    func diagnosticsAreRunning(_ artifact: DiagnosticsArtifact) -> Bool {
+        diagnosticsProcess?.processIdentifier == artifact.processIdentifier && diagnosticsProcess?.isRunning == true
     }
 
     func launchTerminal(profile: ProfileName) async throws {
@@ -124,6 +222,14 @@ actor CodexProcessController: CodexProcessControlling {
     private func redact(_ text: String) -> String {
         text.replacingOccurrences(of: #"eyJ[A-Za-z0-9._-]+"#, with: "<redacted-token>", options: .regularExpression)
             .replacingOccurrences(of: #"sk-[A-Za-z0-9_-]+"#, with: "<redacted-key>", options: .regularExpression)
+    }
+
+    private func tail(_ url: URL, maximumBytes: UInt64) throws -> String {
+        let handle = try FileHandle(forReadingFrom: url)
+        defer { try? handle.close() }
+        let size = try handle.seekToEnd()
+        try handle.seek(toOffset: size > maximumBytes ? size - maximumBytes : 0)
+        return String(decoding: try handle.readToEnd() ?? Data(), as: UTF8.self)
     }
 }
 

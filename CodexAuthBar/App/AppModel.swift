@@ -1,5 +1,6 @@
 import AppKit
 import CodexAuthCore
+import Darwin
 import Observation
 import SwiftUI
 import UserNotifications
@@ -7,15 +8,20 @@ import UserNotifications
 @MainActor
 @Observable
 final class AppModel {
+    static let autoSwitchNotificationCategory = "CODEX_AUTH_BAR_AUTO_SWITCH"
+    static let autoSwitchNotificationAction = "SWITCH_AND_RESTART"
     private(set) var accounts: [AccountRecord] = []
     private(set) var activeAccountKey: AccountKey?
     private(set) var previousAccountKey: AccountKey?
+    private(set) var activeAccountActivatedAtMilliseconds: Int64?
     private(set) var profiles: [ProfileName] = []
     var selectedProfile: ProfileName?
     var isLoading = false
     var statusMessage = ""
     var errorMessage: String?
     var searchText = ""
+    var diagnosticsText = "Diagnostics have not been started."
+    var diagnosticsRunning = false
 
     let home: CodexHome
     private let repository: AccountRepository
@@ -23,6 +29,8 @@ final class AppModel {
     private let usageService: ChatGPTUsageService
     private let processController: CodexProcessController
     private let codextManager = CodextManager()
+    private var lastAutoSwitchActiveRefresh = Date.distantPast
+    private var fileWatcher: DirectoryWatcher?
 
     init() {
         let preference = UserDefaults.standard.string(forKey: "codexHome").map { URL(fileURLWithPath: $0, isDirectory: true) }
@@ -48,6 +56,12 @@ final class AppModel {
     func start() async {
         do { _ = try await RegistryStore(home: home).recoverPendingTransaction() } catch { errorMessage = "Recovery: \(error.localizedDescription)" }
         await reload()
+        do {
+            try FileManager.default.createDirectory(at: home.accounts, withIntermediateDirectories: true)
+            fileWatcher = try DirectoryWatcher(url: home.accounts) { [weak self] in
+                Task { @MainActor in await self?.reload() }
+            }
+        } catch { errorMessage = error.localizedDescription }
         Task { await autoSwitchLoop() }
     }
 
@@ -59,6 +73,7 @@ final class AppModel {
             accounts = state.registry.accounts.sorted { $0.displayName.localizedStandardCompare($1.displayName) == .orderedAscending }
             activeAccountKey = state.registry.activeAccountKey
             previousAccountKey = state.registry.previousActiveAccountKey
+            activeAccountActivatedAtMilliseconds = state.registry.activeAccountActivatedAtMilliseconds
             profiles = try await profileStore.list()
             errorMessage = nil
         } catch {
@@ -70,6 +85,7 @@ final class AppModel {
         isLoading = true
         defer { isLoading = false }
         do {
+            try await processController.ensureFileCredentialStore()
             let wasRunning = await processController.isDesktopRunning()
             if restart, wasRunning { try await processController.terminateDesktopApp(timeout: .seconds(10)) }
             do {
@@ -92,12 +108,17 @@ final class AppModel {
     }
 
     func refreshUsage(localOnly: Bool = false, activeOnly: Bool = false) async {
+        let remoteRefreshEnabled = UserDefaults.standard.object(forKey: "apiRefreshEnabled") as? Bool ?? true
+        if !localOnly, !remoteRefreshEnabled {
+            statusMessage = "Remote usage refresh is disabled in Settings"
+            return
+        }
         isLoading = true
         defer { isLoading = false }
         let targets = activeOnly ? accounts.filter { $0.accountKey == activeAccountKey } : accounts
         if localOnly {
             do {
-                if let activeAccountKey, let event = try LocalUsageScanner.newest(home: home, activatedAtMilliseconds: nil) {
+                if let activeAccountKey, let event = try LocalUsageScanner.newest(home: home, activatedAtMilliseconds: activeAccountActivatedAtMilliseconds) {
                     try await repository.updateUsage(event.snapshot, for: activeAccountKey)
                 }
             } catch { errorMessage = error.localizedDescription }
@@ -108,14 +129,42 @@ final class AppModel {
                     if case let .success(snapshot) = result { try? await repository.updateUsage(snapshot, for: key) }
                 }
             }
+            try? await repository.refreshAccountNames(using: usageService)
         }
         await reload()
     }
 
-    func importFile(_ url: URL) async {
+    func importFile(_ url: URL, format: ImportFormat = .automatic) async {
         do {
-            let report = try await repository.importAccounts(ImportRequest(source: url))
+            let report = try await repository.importAccounts(ImportRequest(source: url, format: format))
             statusMessage = "Imported \(report.importedAccountKeys.count) account(s)"
+            await reload()
+        } catch { errorMessage = error.localizedDescription }
+    }
+
+    func exportAccounts(format: ExportFormat, to destination: URL?) async {
+        do {
+            let report = try await repository.exportAccounts(ExportRequest(destination: destination, format: format))
+            statusMessage = "Exported \(report.exportedCount) account(s); skipped \(report.skippedCount)"
+        } catch { errorMessage = error.localizedDescription }
+    }
+
+    func purgeRegistry() async {
+        await importFile(home.accounts, format: .purge)
+    }
+
+    func cleanManagedFiles() async {
+        do {
+            let report = try await repository.clean()
+            statusMessage = "Cleaned \(report.deletedFiles.count) stale file(s)"
+            await reload()
+        } catch { errorMessage = error.localizedDescription }
+    }
+
+    func recoverTransaction() async {
+        do {
+            let result = try await RegistryStore(home: home).recoverPendingTransaction()
+            statusMessage = "Recovery result: \(String(describing: result))"
             await reload()
         } catch { errorMessage = error.localizedDescription }
     }
@@ -131,6 +180,69 @@ final class AppModel {
     func chooseProfile(_ profile: ProfileName?) {
         selectedProfile = profile
         UserDefaults.standard.set(profile?.rawValue, forKey: "selectedProfile")
+    }
+
+    func createProfile(named rawName: String) async {
+        guard let name = ProfileName(rawName) else {
+            errorMessage = "Profile names may contain only letters, digits, underscore, and hyphen."
+            return
+        }
+        do { try await profileStore.create(name); chooseProfile(name); await reload() }
+        catch { errorMessage = error.localizedDescription }
+    }
+
+    func renameProfile(_ profile: ProfileName, to rawName: String) async {
+        guard let newName = ProfileName(rawName) else {
+            errorMessage = "Profile names may contain only letters, digits, underscore, and hyphen."
+            return
+        }
+        do {
+            try await profileStore.rename(profile, to: newName)
+            if selectedProfile == profile { chooseProfile(newName) }
+            await reload()
+        } catch { errorMessage = error.localizedDescription }
+    }
+
+    func deleteProfile(_ profile: ProfileName) async {
+        do {
+            try await profileStore.delete(profile)
+            if selectedProfile == profile { chooseProfile(nil) }
+            await reload()
+        } catch { errorMessage = error.localizedDescription }
+    }
+
+    func openProfile(_ profile: ProfileName) async {
+        NSWorkspace.shared.open(await profileStore.profileURL(profile))
+    }
+
+    func revealProfile(_ profile: ProfileName) async {
+        NSWorkspace.shared.activateFileViewerSelecting([await profileStore.profileURL(profile)])
+    }
+
+    func copyProfileCommand(_ profile: ProfileName) async {
+        do {
+            let capabilities = try await processController.capabilities()
+            guard capabilities.supportsProfiles else { throw ProcessError.profileUnsupported }
+            NSPasteboard.general.clearContents()
+            NSPasteboard.general.setString(TerminalCommandBuilder.command(codex: capabilities.executable, profile: profile), forType: .string)
+            statusMessage = "Command copied"
+        } catch { errorMessage = error.localizedDescription }
+    }
+
+    func removeLegacyLaunchAgent() async {
+        let plist = FileManager.default.homeDirectoryForCurrentUser
+            .appending(path: "Library/LaunchAgents/com.loongphy.codex-auth.auto.plist")
+        let process = Process()
+        process.executableURL = URL(fileURLWithPath: "/bin/launchctl")
+        process.arguments = ["unload", plist.path]
+        process.standardOutput = FileHandle.nullDevice
+        process.standardError = FileHandle.nullDevice
+        try? process.run()
+        process.waitUntilExit()
+        do {
+            if FileManager.default.fileExists(atPath: plist.path) { try FileManager.default.removeItem(at: plist) }
+            statusMessage = "Legacy LaunchAgent removed"
+        } catch { errorMessage = error.localizedDescription }
     }
 
     func launchCLI() async {
@@ -151,6 +263,17 @@ final class AppModel {
         } catch { errorMessage = error.localizedDescription }
     }
 
+    func login(apiKey: String) async {
+        guard !apiKey.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else { return }
+        do {
+            let artifact = try await processController.performLogin(.apiKey(apiKey))
+            defer { try? FileManager.default.removeItem(at: artifact.authURL) }
+            _ = try await repository.importAccounts(ImportRequest(source: artifact.authURL, activate: true))
+            statusMessage = "API key account added"
+            await reload()
+        } catch { errorMessage = error.localizedDescription }
+    }
+
     func launchCodext() async {
         do {
             let cli = try await codextManager.installedCLI()
@@ -160,6 +283,27 @@ final class AppModel {
         } catch { errorMessage = error.localizedDescription }
     }
 
+    func launchCodextDiagnostics() async {
+        do {
+            let cli = try await codextManager.installedCLI()
+            if await processController.isDesktopRunning() {
+                try await processController.terminateDesktopApp(timeout: .seconds(10))
+            }
+            let artifact = try await processController.launchDiagnostics(cliPath: cli)
+            diagnosticsRunning = true
+            diagnosticsText = "Diagnostics session started. Waiting for output…"
+            while await processController.diagnosticsAreRunning(artifact) {
+                diagnosticsText = (try? await processController.diagnosticOutput(artifact)) ?? diagnosticsText
+                try? await Task.sleep(for: .seconds(1))
+            }
+            diagnosticsText = (try? await processController.diagnosticOutput(artifact)) ?? diagnosticsText
+            diagnosticsRunning = false
+        } catch {
+            diagnosticsRunning = false
+            errorMessage = error.localizedDescription
+        }
+    }
+
     private func autoSwitchLoop() async {
         while !Task.isCancelled {
             let storedInterval = UserDefaults.standard.double(forKey: "refreshInterval")
@@ -167,20 +311,78 @@ final class AppModel {
             try? await Task.sleep(for: .seconds(interval))
             guard UserDefaults.standard.bool(forKey: "autoSwitchEnabled") else { continue }
             await reload()
+            let remoteEnabled = UserDefaults.standard.object(forKey: "apiRefreshEnabled") as? Bool ?? true
+            if remoteEnabled, Date().timeIntervalSince(lastAutoSwitchActiveRefresh) >= 60,
+               let active = activeAccount
+            {
+                await refreshAccountSilently(active)
+                lastAutoSwitchActiveRefresh = .now
+                await reload()
+            }
+            if remoteEnabled {
+                let staleBefore = Int64(Date().timeIntervalSince1970) - 60
+                let registry = RegistryV4(activeAccountKey: activeAccountKey, accounts: accounts)
+                if let stale = AutoSwitchPolicy().rankedCandidates(registry: registry)
+                    .first(where: { ($0.lastUsageAt ?? .min) < staleBefore })
+                {
+                    await refreshAccountSilently(stale)
+                    await reload()
+                }
+            }
             let thresholds = AutoSwitchThresholds(
                 fiveHour: UserDefaults.standard.double(forKey: "autoSwitch5h") == 0 ? 10 : UserDefaults.standard.double(forKey: "autoSwitch5h"),
                 weekly: UserDefaults.standard.double(forKey: "autoSwitchWeekly") == 0 ? 5 : UserDefaults.standard.double(forKey: "autoSwitchWeekly")
             )
-            let registry = RegistryV4(activeAccountKey: activeAccountKey, accounts: accounts)
+            var registry = RegistryV4(activeAccountKey: activeAccountKey, accounts: accounts)
+            guard AutoSwitchPolicy().decision(registry: registry, thresholds: thresholds) != nil else { continue }
+            if remoteEnabled {
+                for candidate in AutoSwitchPolicy().rankedCandidates(registry: registry).prefix(3) {
+                    await refreshAccountSilently(candidate)
+                }
+                await reload()
+                registry = RegistryV4(activeAccountKey: activeAccountKey, accounts: accounts)
+            }
             guard let decision = AutoSwitchPolicy().decision(registry: registry, thresholds: thresholds) else { continue }
-            if await processController.isDesktopRunning() {
+            if await processController.isDesktopRunning(), await processController.isManagedDesktopRunning() {
+                await switchAccount(decision.target, restart: false)
+            } else if await processController.isDesktopRunning() {
                 let content = UNMutableNotificationContent()
                 content.title = "Codex limit threshold reached"
-                content.body = "Open Codex Auth Bar to switch and restart safely."
-                try? await UNUserNotificationCenter.current().add(UNNotificationRequest(identifier: "auto-switch", content: content, trigger: nil))
+                content.body = "Switch to \(accounts.first(where: { $0.accountKey == decision.target })?.displayName ?? "the best available account") and restart Codex."
+                content.categoryIdentifier = Self.autoSwitchNotificationCategory
+                content.userInfo = ["targetAccountKey": decision.target.rawValue]
+                try? await UNUserNotificationCenter.current().add(
+                    UNNotificationRequest(identifier: "auto-switch", content: content, trigger: nil)
+                )
             } else {
                 await switchAccount(decision.target, restart: false)
             }
         }
     }
+
+    private func refreshAccountSilently(_ account: AccountRecord) async {
+        if case let .success(snapshot) = await usageService.usage(for: account) {
+            try? await repository.updateUsage(snapshot, for: account.accountKey)
+        }
+    }
+}
+
+private final class DirectoryWatcher: @unchecked Sendable {
+    private let descriptor: Int32
+    private let source: DispatchSourceFileSystemObject
+
+    init(url: URL, handler: @escaping @Sendable () -> Void) throws {
+        descriptor = open(url.path, O_EVTONLY)
+        guard descriptor >= 0 else { throw CocoaError(.fileReadNoPermission) }
+        source = DispatchSource.makeFileSystemObjectSource(
+            fileDescriptor: descriptor,
+            eventMask: [.write, .rename, .delete],
+            queue: DispatchQueue(label: "com.mesteriis.CodexAuthBar.file-watcher")
+        )
+        source.setEventHandler(handler: handler)
+        source.setCancelHandler { [descriptor] in close(descriptor) }
+        source.resume()
+    }
+
+    deinit { source.cancel() }
 }

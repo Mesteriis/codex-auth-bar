@@ -36,6 +36,12 @@ public struct AutoSwitchPolicy: Sendable {
         return AutoSwitchDecision(source: activeKey, target: best.accountKey)
     }
 
+    public func rankedCandidates(registry: RegistryV4, now: Date = .now) -> [AccountRecord] {
+        registry.accounts
+            .filter { $0.accountKey != registry.activeAccountKey }
+            .sorted { score($0, now: now) > score($1, now: now) }
+    }
+
     private func score(_ account: AccountRecord, now: Date) -> Score {
         let windows = [account.lastUsage?.primary, account.lastUsage?.secondary].compactMap { $0?.remainingPercent(at: now) }
         return Score(value: windows.min() ?? 100, lastUsageAt: account.lastUsageAt ?? -1, createdAt: account.createdAt)

@@ -9,6 +9,8 @@ struct SettingsView: View {
     @AppStorage("autoSwitchWeekly") private var thresholdWeekly = 5.0
     @AppStorage("refreshInterval") private var refreshInterval = 60.0
     @State private var launchAtLogin = SMAppService.mainApp.status == .enabled
+    @AppStorage("codexHome") private var codexHomePreference = ""
+    @AppStorage("codexCLIPath") private var codexCLIPath = ""
 
     var body: some View {
         Form {
@@ -16,11 +18,20 @@ struct SettingsView: View {
                 Toggle("Launch at login", isOn: $launchAtLogin).onChange(of: launchAtLogin) { _, enabled in
                     do { enabled ? try SMAppService.mainApp.register() : try SMAppService.mainApp.unregister() } catch { model.errorMessage = error.localizedDescription }
                 }
-                LabeledContent("Codex home", value: model.home.root.path)
+                LabeledContent("Current Codex home", value: model.home.root.path)
+                TextField("Custom CODEX_HOME", text: $codexHomePreference)
+                HStack {
+                    Button("Choose…") { chooseCodexHome() }
+                    Button("Use default") { codexHomePreference = "" }
+                }
+                Text("Changes to CODEX_HOME take effect after restarting Codex Auth Bar.")
+                    .font(.caption).foregroundStyle(.secondary)
+                TextField("Codex CLI path", text: $codexCLIPath)
             }
             Section("Usage API") {
                 Toggle("Use remote usage and workspace APIs", isOn: $apiRefreshEnabled)
                 Text("Access tokens are sent only to chatgpt.com. These backend endpoints are unofficial and may change.").font(.caption).foregroundStyle(.secondary)
+                Link("Security and API disclosure", destination: URL(string: "https://github.com/Mesteriis/codex-auth-bar#security-and-privacy")!)
             }
             Section("Automatic switching") {
                 Toggle("Enable auto-switch monitoring", isOn: $autoSwitchEnabled)
@@ -38,5 +49,14 @@ struct SettingsView: View {
         }
         .formStyle(.grouped)
         .padding()
+    }
+
+    private func chooseCodexHome() {
+        let panel = NSOpenPanel()
+        panel.canChooseFiles = false
+        panel.canChooseDirectories = true
+        panel.canCreateDirectories = true
+        guard panel.runModal() == .OK, let url = panel.url else { return }
+        codexHomePreference = url.path
     }
 }

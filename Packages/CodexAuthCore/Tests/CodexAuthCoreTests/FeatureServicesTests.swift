@@ -60,6 +60,38 @@ struct FeatureServicesTests {
         #expect(state.registry.activeAccountKey == record.accountKey)
         #expect(try Data(contentsOf: fixture.home.snapshot(for: record.accountKey)) == auth)
     }
+
+    @Test func purgeSelectsNewestSnapshotAndSafelyActivatesIt() async throws {
+        let fixture = try FeatureFixture()
+        let old = try authData(email: "old@example.com", userID: "purge-user", accountID: "purge-account")
+        let newest = try authData(email: "new@example.com", userID: "purge-user", accountID: "purge-account")
+        let key = AccountKey("purge-user::purge-account")
+        let canonical = fixture.home.snapshot(for: key)
+        let backup = fixture.home.accounts.appending(path: "auth.json.bak.20260711")
+        try old.write(to: canonical)
+        try newest.write(to: backup)
+        try FileManager.default.setAttributes([.modificationDate: Date(timeIntervalSince1970: 100)], ofItemAtPath: canonical.path)
+        try FileManager.default.setAttributes([.modificationDate: Date(timeIntervalSince1970: 200)], ofItemAtPath: backup.path)
+        let staleLiveAuth = Data(#"{"broken":true}"#.utf8)
+        try staleLiveAuth.write(to: fixture.home.auth)
+        let repository = AccountRepository(home: fixture.home)
+
+        let report = try await repository.importAccounts(
+            ImportRequest(source: fixture.home.accounts, format: .purge)
+        )
+        let state = try await repository.state(refresh: .stored)
+        let recovered = try #require(state.registry.accounts.first)
+        let backupFiles = try FileManager.default.contentsOfDirectory(at: fixture.home.accounts, includingPropertiesForKeys: nil)
+            .filter { $0.lastPathComponent.hasPrefix("auth.json.bak.") && $0 != backup }
+
+        #expect(report.importedAccountKeys == [key])
+        #expect(state.registry.accounts.count == 1)
+        #expect(recovered.email == "new@example.com")
+        #expect(state.registry.activeAccountKey == key)
+        #expect(try Data(contentsOf: fixture.home.auth) == newest)
+        #expect(try backupFiles.contains { try Data(contentsOf: $0) == staleLiveAuth })
+    }
+
     @Test func cpaConversionPreservesTokens() throws {
         let idToken = makeJWT(email: "import@example.com", userID: "u", accountID: "a")
         let cpa = try JSONSerialization.data(withJSONObject: [
@@ -149,6 +181,7 @@ struct FeatureServicesTests {
         let decision = AutoSwitchPolicy().decision(registry: registry, thresholds: .init(fiveHour: 10, weekly: 5))
 
         #expect(decision?.target == better.accountKey)
+        #expect(AutoSwitchPolicy().rankedCandidates(registry: registry).map(\.accountKey) == [better.accountKey, good.accountKey])
     }
 
     @Test func profileStoreManagesOnlyValidProfileFiles() async throws {
@@ -172,6 +205,25 @@ struct FeatureServicesTests {
         #expect(throws: CodextError.hashMismatch) {
             try CodextVerifier.verify(file: file, artifact: manifest)
         }
+    }
+
+    @Test func codextArchiveRejectsTraversalAndUnexpectedFiles() throws {
+        #expect(throws: CodextError.unsafeArchive) {
+            try CodextArchiveValidator.validate(entries: ["codext", "../codex-code-mode-host"])
+        }
+        #expect(throws: CodextError.unsafeArchive) {
+            try CodextArchiveValidator.validate(entries: ["codext", "codex-code-mode-host", "extra"])
+        }
+        try CodextArchiveValidator.validate(entries: ["codex-code-mode-host", "codext"])
+    }
+
+    @Test func doctorReportParsesCredentialStoreWithoutDependingOnCheckLayout() throws {
+        let report = Data(#"{"checks":{"auth.credentials":{"details":{"auth storage mode":"Keyring"}}}}"#.utf8)
+        let alternate = Data(#"{"diagnostics":[{"credential_store":"ephemeral"}]}"#.utf8)
+
+        #expect(try DoctorReportParser.credentialStore(from: report) == .keyring)
+        #expect(try DoctorReportParser.credentialStore(from: alternate) == .ephemeral)
+        #expect(try DoctorReportParser.credentialStore(from: Data(#"{"checks":{}}"#.utf8)) == .unknown)
     }
 }
 

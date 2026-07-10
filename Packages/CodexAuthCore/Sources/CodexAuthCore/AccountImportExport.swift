@@ -53,6 +53,7 @@ public struct RemovalReport: Equatable, Sendable {
 public extension AccountRepository {
     func importAccounts(_ request: ImportRequest) async throws -> ImportReport {
         var sources: [(String, Data)] = []
+        var preliminaryEvents: [ImportEvent] = []
         var isDirectory: ObjCBool = false
         if FileManager.default.fileExists(atPath: request.source.path, isDirectory: &isDirectory), isDirectory.boolValue {
             let urls = try FileManager.default.contentsOfDirectory(at: request.source, includingPropertiesForKeys: nil)
@@ -68,16 +69,15 @@ public extension AccountRepository {
             }
         }
 
-        if request.format == .purge {
-            sources = try FileManager.default.contentsOfDirectory(at: request.source, includingPropertiesForKeys: [.contentModificationDateKey])
-                .filter { $0.lastPathComponent.hasSuffix(".auth.json") }
-                .sorted { $0.lastPathComponent < $1.lastPathComponent }
-                .map { ($0.lastPathComponent, try Data(contentsOf: $0)) }
+        if request.format == .purge, isDirectory.boolValue {
+            let result = try await purgeSources(in: request.source)
+            sources = result.sources
+            preliminaryEvents = result.events
         }
 
         var loaded = try await store.load()
         if request.format == .purge { loaded.registry = RegistryV4() }
-        var events: [ImportEvent] = []
+        var events = preliminaryEvents
         var imported: [AccountKey] = []
         let applyAlias = sources.count == 1 ? request.alias ?? "" : ""
 
@@ -134,12 +134,87 @@ public extension AccountRepository {
                 events.append(ImportEvent(source: name, outcome: .skipped, detail: String(describing: error)))
             }
         }
-        if request.format == .purge, loaded.registry.activeAccountKey == nil {
-            loaded.registry.activeAccountKey = loaded.registry.accounts.first?.accountKey
+        if request.format == .purge {
+            loaded.registry.accounts.sort {
+                if $0.email != $1.email { return $0.email < $1.email }
+                return $0.accountKey.rawValue < $1.accountKey.rawValue
+            }
         }
         _ = try await store.commit(loaded.registry, expected: loaded.fingerprint)
-        if request.activate, let key = imported.last { _ = try await switchAccount(to: key) }
+        if request.format == .purge {
+            _ = try? await syncActiveAuth()
+            let rebuilt = try await store.load().registry
+            if rebuilt.activeAccountKey == nil, let first = rebuilt.accounts.first?.accountKey {
+                _ = try await switchAccount(to: first)
+            }
+        } else if request.activate, let key = imported.last {
+            _ = try await switchAccount(to: key)
+        }
         return ImportReport(events: events, importedAccountKeys: imported)
+    }
+
+    private func purgeSources(in directory: URL) async throws -> (sources: [(String, Data)], events: [ImportEvent]) {
+        let urls = try FileManager.default.contentsOfDirectory(
+            at: directory,
+            includingPropertiesForKeys: [.contentModificationDateKey, .isRegularFileKey],
+            options: [.skipsHiddenFiles]
+        ).filter {
+            $0.lastPathComponent.hasSuffix(".auth.json") || $0.lastPathComponent.hasPrefix("auth.json.bak.")
+        }
+        var selected: [AccountKey: PurgeCandidate] = [:]
+        var events: [ImportEvent] = []
+
+        for url in urls.sorted(by: { $0.lastPathComponent < $1.lastPathComponent }) {
+            do {
+                let values = try url.resourceValues(forKeys: [.contentModificationDateKey, .isRegularFileKey])
+                guard values.isRegularFile == true else { throw CocoaError(.fileReadUnsupportedScheme) }
+                let data = try Data(contentsOf: url)
+                let info = try AuthParser.parse(data)
+                let key: AccountKey
+                if info.authMode == .apiKey {
+                    guard let apiKey = info.openAIAPIKey else { throw AuthError.missingAccessToken }
+                    let identity = try await apiKeyIdentityResolver.identity(apiKey: apiKey)
+                    key = Self.apiKeyAccountKey(identityID: identity.id, apiKey: apiKey)
+                } else {
+                    guard let accountKey = info.accountKey else { throw AuthError.missingUserID }
+                    key = accountKey
+                }
+                let canonical = CodexHome.snapshotFileName(for: key)
+                let rank: Int
+                if url.lastPathComponent == canonical {
+                    rank = 2
+                } else if url.lastPathComponent.hasPrefix("auth.json.bak.") {
+                    rank = 1
+                } else {
+                    rank = 0
+                }
+                let candidate = PurgeCandidate(
+                    name: url.lastPathComponent,
+                    data: data,
+                    key: key,
+                    modifiedAt: values.contentModificationDate ?? .distantPast,
+                    rank: rank
+                )
+                if let current = selected[key] {
+                    if current < candidate {
+                        events.append(.init(source: current.name, outcome: .skipped, detail: "SupersededByNewerSnapshot"))
+                        selected[key] = candidate
+                    } else {
+                        events.append(.init(source: candidate.name, outcome: .skipped, detail: "SupersededByNewerSnapshot"))
+                    }
+                } else {
+                    selected[key] = candidate
+                }
+            } catch {
+                events.append(.init(source: url.lastPathComponent, outcome: .skipped, detail: String(describing: error)))
+            }
+        }
+
+        let candidates = selected.values.sorted {
+            if $0.name != $1.name { return $0.name < $1.name }
+            return $0.key.rawValue < $1.key.rawValue
+        }
+        return (candidates.map { ($0.name, $0.data) }, events)
     }
 
     func exportAccounts(_ request: ExportRequest) async throws -> ExportReport {
@@ -204,6 +279,20 @@ public extension AccountRepository {
             if FileManager.default.fileExists(atPath: snapshot.path) { try FileManager.default.removeItem(at: snapshot) }
         }
         return RemovalReport(removedAccountKeys: Array(removing).sorted { $0.rawValue < $1.rawValue }, promotedAccountKey: promoted)
+    }
+}
+
+private struct PurgeCandidate: Sendable {
+    var name: String
+    var data: Data
+    var key: AccountKey
+    var modifiedAt: Date
+    var rank: Int
+
+    static func < (lhs: Self, rhs: Self) -> Bool {
+        if lhs.modifiedAt != rhs.modifiedAt { return lhs.modifiedAt < rhs.modifiedAt }
+        if lhs.rank != rhs.rank { return lhs.rank < rhs.rank }
+        return lhs.name < rhs.name
     }
 }
 

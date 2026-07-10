@@ -1,3 +1,4 @@
+import CryptoKit
 import Foundation
 import Testing
 @testable import CodexAuthCore
@@ -46,6 +47,32 @@ struct StorageAndWorkflowTests {
         #expect(!FileManager.default.fileExists(atPath: fixture.home.transactionJournal.path))
     }
 
+    @Test func recoveryDiscardsPreparedJournalWhenPreviousAuthIsStillLive() async throws {
+        let fixture = try TemporaryCodexHome()
+        let first = account("first", email: "first@example.com")
+        let second = account("second", email: "second@example.com")
+        try fixture.writeSnapshot(first.accountKey, text: "first-auth")
+        try fixture.writeSnapshot(second.accountKey, text: "second-auth")
+        try Data("first-auth".utf8).write(to: fixture.home.auth)
+        let store = RegistryStore(home: fixture.home)
+        let loaded = try await store.load()
+        _ = try await store.commit(RegistryV4(activeAccountKey: first.accountKey, accounts: [first, second]), expected: loaded.fingerprint)
+        try await store.writeJournal(
+            target: second.accountKey,
+            previous: first.accountKey,
+            targetAuthSHA256: sha256(Data("second-auth".utf8)),
+            stage: "prepared"
+        )
+
+        let result = try await store.recoverPendingTransaction()
+        let after = try await store.load()
+
+        #expect(result == .journalRemoved)
+        #expect(after.registry.activeAccountKey == first.accountKey)
+        #expect(try Data(contentsOf: fixture.home.auth) == Data("first-auth".utf8))
+        #expect(!FileManager.default.fileExists(atPath: fixture.home.transactionJournal.path))
+    }
+
     @Test func aliasesAreUniqueCaseInsensitively() async throws {
         let fixture = try TemporaryCodexHome()
         let first = account("first", email: "first@example.com", alias: "Work")
@@ -78,6 +105,10 @@ struct StorageAndWorkflowTests {
         #expect(report.deletedFiles.contains("stale.auth.json"))
         #expect(FileManager.default.fileExists(atPath: fixture.home.exportBackup.appending(path: "saved.auth.json").path))
     }
+}
+
+private func sha256(_ data: Data) -> String {
+    SHA256.hash(data: data).map { String(format: "%02x", $0) }.joined()
 }
 
 private func account(_ id: String, email: String, alias: String = "") -> AccountRecord {

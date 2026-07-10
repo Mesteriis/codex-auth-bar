@@ -11,16 +11,68 @@ public struct LoginArtifact: Sendable {
     public init(authURL: URL) { self.authURL = authURL }
 }
 
+public enum CredentialStoreMode: String, Codable, Sendable {
+    case file
+    case keyring
+    case auto
+    case ephemeral
+    case unknown
+
+    public var permitsFileSwitching: Bool { self == .file }
+}
+
+public enum DoctorReportParser {
+    public static func credentialStore(from data: Data) throws -> CredentialStoreMode {
+        let object = try JSONSerialization.jsonObject(with: data)
+        return findCredentialStore(in: object) ?? .unknown
+    }
+
+    private static func findCredentialStore(in value: Any) -> CredentialStoreMode? {
+        if let dictionary = value as? [String: Any] {
+            let expectedKeys = ["auth storage mode", "credential_store", "credentials_store", "cli_auth_credentials_store"]
+            for key in expectedKeys {
+                if let raw = dictionary[key] as? String, let mode = mode(raw) { return mode }
+            }
+            for nested in dictionary.values {
+                if let found = findCredentialStore(in: nested) { return found }
+            }
+        } else if let array = value as? [Any] {
+            for nested in array {
+                if let found = findCredentialStore(in: nested) { return found }
+            }
+        }
+        return nil
+    }
+
+    private static func mode(_ raw: String) -> CredentialStoreMode? {
+        switch raw.trimmingCharacters(in: .whitespacesAndNewlines).lowercased() {
+        case "file": .file
+        case "keyring": .keyring
+        case "auto": .auto
+        case "ephemeral": .ephemeral
+        default: nil
+        }
+    }
+}
+
 public struct CodexCapabilities: Sendable {
     public var executable: URL
     public var version: String
     public var supportsProfiles: Bool
     public var supportsDoctorJSON: Bool
-    public init(executable: URL, version: String, supportsProfiles: Bool, supportsDoctorJSON: Bool) {
+    public var credentialStore: CredentialStoreMode
+    public init(
+        executable: URL,
+        version: String,
+        supportsProfiles: Bool,
+        supportsDoctorJSON: Bool,
+        credentialStore: CredentialStoreMode = .unknown
+    ) {
         self.executable = executable
         self.version = version
         self.supportsProfiles = supportsProfiles
         self.supportsDoctorJSON = supportsDoctorJSON
+        self.credentialStore = credentialStore
     }
 }
 

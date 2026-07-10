@@ -34,3 +34,16 @@ public enum CodextVerifier {
         guard hash.caseInsensitiveCompare(artifact.sha256) == .orderedSame else { throw CodextError.hashMismatch }
     }
 }
+
+public enum CodextArchiveValidator {
+    public static func validate(entries: [String]) throws {
+        let normalized = entries.map { entry in
+            entry.hasPrefix("./") ? String(entry.dropFirst(2)) : entry
+        }
+        guard normalized.allSatisfy({ entry in
+            !entry.isEmpty && !entry.hasPrefix("/") &&
+                !entry.split(separator: "/", omittingEmptySubsequences: false).contains("..")
+        }), Set(normalized) == Set(["codext", "codex-code-mode-host"]), normalized.count == 2
+        else { throw CodextError.unsafeArchive }
+    }
+}

@@ -164,6 +164,7 @@ public actor AccountRepository {
         guard FileManager.default.fileExists(atPath: snapshotURL.path) else { throw AccountError.snapshotMissing }
         let targetData = try Data(contentsOf: snapshotURL)
         let targetHash = SHA256.hash(data: targetData).map { String(format: "%02x", $0) }.joined()
+        let priorAuth = FileManager.default.fileExists(atPath: home.auth.path) ? try Data(contentsOf: home.auth) : nil
         let previous = loaded.registry.activeAccountKey
         try await store.writeJournal(target: key, previous: previous, targetAuthSHA256: targetHash, stage: "prepared")
 
@@ -180,8 +181,18 @@ public actor AccountRepository {
         registry.accounts[index].lastUsedAt = Int64(Date().timeIntervalSince1970)
         do {
             _ = try await store.commit(registry, expected: loaded.fingerprint)
-        } catch StorageError.concurrentModification {
-            throw AccountError.concurrentModification
+        } catch {
+            let liveHash = try? SecureFiles.fingerprint(home.auth).sha256
+            if liveHash == targetHash {
+                if let priorAuth {
+                    try SecureFiles.copyPreservingDestinationMode(priorAuth, to: home.auth)
+                } else if FileManager.default.fileExists(atPath: home.auth.path) {
+                    try FileManager.default.removeItem(at: home.auth)
+                }
+                try await store.removeJournal()
+            }
+            if error is StorageError { throw AccountError.concurrentModification }
+            throw error
         }
         try await store.removeJournal()
         return SwitchReceipt(selectedAccountKey: key, previousAccountKey: previous, backupURL: backup)

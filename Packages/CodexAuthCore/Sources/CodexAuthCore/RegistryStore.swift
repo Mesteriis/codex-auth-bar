@@ -72,12 +72,36 @@ public actor RegistryStore {
     public func recoverPendingTransaction() throws -> RecoveryResult {
         guard FileManager.default.fileExists(atPath: home.transactionJournal.path) else { return .nothingToRecover }
         let journal = try JSONDecoder().decode(TransactionJournal.self, from: Data(contentsOf: home.transactionJournal))
-        guard FileManager.default.fileExists(atPath: home.auth.path),
+        let authExists = FileManager.default.fileExists(atPath: home.auth.path)
+        if journal.stage == "prepared" {
+            if !authExists, journal.previousAccountKey == nil {
+                try removeJournal()
+                return .journalRemoved
+            }
+            if let previous = journal.previousAccountKey,
+               authExists,
+               FileManager.default.fileExists(atPath: home.snapshot(for: previous).path),
+               try SecureFiles.fingerprint(home.auth).sha256 == SecureFiles.fingerprint(home.snapshot(for: previous)).sha256
+            {
+                try removeJournal()
+                return .journalRemoved
+            }
+        }
+        guard authExists,
               FileManager.default.fileExists(atPath: home.snapshot(for: journal.targetAccountKey).path)
         else { return .manualInterventionRequired }
         let active = try SecureFiles.fingerprint(home.auth)
         let target = try SecureFiles.fingerprint(home.snapshot(for: journal.targetAccountKey))
-        guard active.sha256 == target.sha256 else { return .manualInterventionRequired }
+        if active.sha256 != target.sha256 {
+            if let previous = journal.previousAccountKey,
+               FileManager.default.fileExists(atPath: home.snapshot(for: previous).path),
+               active.sha256 == (try SecureFiles.fingerprint(home.snapshot(for: previous))).sha256
+            {
+                try removeJournal()
+                return .journalRemoved
+            }
+            return .manualInterventionRequired
+        }
         var loaded = try load()
         if loaded.registry.activeAccountKey != journal.targetAccountKey {
             loaded.registry.previousActiveAccountKey = journal.previousAccountKey
