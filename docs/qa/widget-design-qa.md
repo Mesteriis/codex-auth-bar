@@ -7,17 +7,17 @@ Reference: `docs/assets/codex-auth-widget-precision-ledger.png`
 Run `./script/render_widget_previews.sh`. The script renders the production
 `CodexAuthWidgetView` through `WidgetPreviewHarness` with deterministic
 family-specific 1/3/6-account fixtures on an opaque dark test canvas; it does
-not read or modify live auth data. The rendered production view supplies its
-own material surface, stroke, and content inset; the test canvas is only the
-desktop backdrop.
+not read or modify live auth data. The rendered production view fills the
+widget canvas with its material surface, stroke, and a single shared 12pt
+internal content inset; the test canvas is only the desktop backdrop.
 The exported files are `widget-small.png`, `widget-medium.png`, and
 `widget-large.png` in this directory.
 
 ## Findings
 
-- Small hierarchy and dual-ring proportions: pass — direct inspection of the 316 × 316 px dark export shows a rounded material surface, generous inset, header/account hierarchy, clean `5h → W` ring labels with one adjacent numeric legend per series, compact `Reset 2d 14h` footer, and blue/purple series distinction.
-- Medium three-row ledger spacing and alignment: pass — direct inspection of the 676 × 316 px dark export shows the header divider, three unclipped rows, paired blue/purple rings, compact reset values, and bottom clearance.
-- Large six-row fixed-column alignment and truncation: pass — direct inspection of the 676 × 708 px dark export shows six rows, fixed columns, account-name truncation, compact reset column, and the reference-like preview summary `3 healthy · 1 low · 1 stale`.
+- Small hierarchy and dual-ring proportions: pass — direct inspection of the 316 × 316 px dark export shows a canvas-filling rounded material surface, shared internal gutter, header/account hierarchy, clean `5h → W` ring labels with one adjacent numeric legend per series, compact `Reset 2d 14h` footer, and blue/purple series distinction.
+- Medium three-row ledger spacing and alignment: pass — direct inspection of the 676 × 316 px dark export shows the header divider, three unclipped rows, paired blue/purple rings, compact reset values, and shared left/right/bottom clearance.
+- Large six-row fixed-column alignment and truncation: pass — direct inspection of the 676 × 708 px dark export shows six rows, grid-aligned columns, full `Enterprise` and `Unavailable` labels, intentional long-account truncation only, a protected reset column, and the reference-like preview summary `3 healthy · 1 low · 1 stale`.
 - Dark rendering: pass — the production root view, not the test canvas, renders the rounded material surface and stroke. Light and increased-contrast artifacts are not part of this deterministic three-PNG export.
 - VoiceOver and numeric redundancy: pass for widget semantics — paired-ring and ledger values retain full weekly/reset wording, plan/status are included on ledger rows, and warning/critical values speak a non-color cue. Menu-bar keyboard/VoiceOver automation has a separate macOS TCC blocker below.
 
@@ -28,7 +28,7 @@ The exported files are `widget-small.png`, `widget-medium.png`, and
 
 ## Regression commands
 
-- `xcodebuild test -project CodexAuthBar.xcodeproj -scheme CodexAuthWidget -destination 'platform=macOS' CODE_SIGNING_ALLOWED=NO`: passed (12 tests).
+- `xcodebuild test -project CodexAuthBar.xcodeproj -scheme CodexAuthWidget -destination 'platform=macOS,arch=arm64' -only-testing:CodexAuthWidgetTests/CodexAuthWidgetTests CODE_SIGNING_ALLOWED=NO`: passed (13 tests).
 - `xcodebuild test -project CodexAuthBar.xcodeproj -scheme CodexAuthBarUITests -destination 'platform=macOS' CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY=''`: builds and launches the UI suite, but the keyboard test is blocked by a pending macOS notification-permission dialog owned by `UserNotificationCenter`. Dismissing it causes XCTest to lose the app accessibility tree. The direct status-item path is also off-screen in this desktop layout.
 
 final visual result: passed

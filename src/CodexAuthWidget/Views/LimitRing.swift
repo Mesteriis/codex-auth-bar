@@ -149,8 +149,7 @@ enum WidgetStrings {
 }
 
 enum WidgetLayoutMetrics {
-    /// Keeps ledger labels and gauge strokes clear of the widget canvas edge.
-    static let ledgerHorizontalInset: CGFloat = 6
+    /// The one shared content gutter for every widget family.
     static let surfaceInset: CGFloat = 12
 }
 

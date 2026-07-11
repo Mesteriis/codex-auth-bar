@@ -67,9 +67,17 @@ final class CodexAuthWidgetTests: XCTestCase {
         XCTAssertFalse(WidgetStrings.relativeTime(until: reset, now: now).isEmpty)
     }
 
-    func testLedgerContentUsesAProtectedHorizontalInset() {
-        XCTAssertEqual(WidgetLayoutMetrics.ledgerHorizontalInset, 6)
-        XCTAssertGreaterThan(WidgetLayoutMetrics.ledgerHorizontalInset, 0)
+    func testLargeLedgerGridFitsTheSurfaceAndProtectsTheResetStatus() {
+        let columns = LargeLedgerGrid.accountColumn
+            + LargeLedgerGrid.planColumn
+            + LargeLedgerGrid.separatorColumn
+            + (LargeLedgerGrid.limitColumn * 2)
+            + LargeLedgerGrid.resetColumn
+            + LargeLedgerGrid.trailingGutter
+        let availableWidth = CGFloat(338) - (WidgetLayoutMetrics.surfaceInset * 2)
+
+        XCTAssertEqual(columns, availableWidth)
+        XCTAssertGreaterThanOrEqual(LargeLedgerGrid.resetColumn, 64)
     }
 
     func testPreviewLedgerIncludesReferenceLikeVariety() throws {

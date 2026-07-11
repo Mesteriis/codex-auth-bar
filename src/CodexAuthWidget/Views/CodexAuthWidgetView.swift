@@ -14,21 +14,23 @@ struct CodexAuthWidgetView: View {
     var body: some View {
         ZStack {
             WidgetMaterialSurface()
-            switch entry.loadState {
-            case .loaded:
-                switch previewFamily ?? family {
-                case .systemSmall: SmallWidgetView(entry: entry)
-                case .systemMedium: MediumWidgetView(entry: entry)
-                case .systemLarge: LargeWidgetView(entry: entry)
-                default: SmallWidgetView(entry: entry)
+            Group {
+                switch entry.loadState {
+                case .loaded:
+                    switch previewFamily ?? family {
+                    case .systemSmall: SmallWidgetView(entry: entry)
+                    case .systemMedium: MediumWidgetView(entry: entry)
+                    case .systemLarge: LargeWidgetView(entry: entry)
+                    default: SmallWidgetView(entry: entry)
+                    }
+                case .missing:
+                    WidgetEmptyState()
+                case .invalid:
+                    WidgetEmptyState(isInvalid: true)
                 }
-            case .missing:
-                WidgetEmptyState()
-            case .invalid:
-                WidgetEmptyState(isInvalid: true)
             }
+            .padding(WidgetLayoutMetrics.surfaceInset)
         }
-        .padding(WidgetLayoutMetrics.surfaceInset)
         .containerBackground(for: .widget) {
             Color.clear
         }

@@ -18,8 +18,6 @@ struct LargeWidgetView: View {
                 }
             }
         }
-        .padding(.top, 2)
-        .padding(.horizontal, WidgetLayoutMetrics.ledgerHorizontalInset)
     }
 }
 
@@ -52,13 +50,15 @@ private struct HealthSummary: View {
 private struct LargeColumnHeaders: View {
     var body: some View {
         HStack(spacing: 0) {
-            Text("ACCOUNT").frame(width: 106, alignment: .leading)
-            Text("PLAN").frame(width: 48, alignment: .leading)
-            Divider().frame(height: 15).padding(.trailing, 4)
-            Text("5h").frame(width: 44)
-            Text("W").frame(width: 44)
-            Text("RESETS").frame(width: 53, alignment: .trailing)
+            Text("ACCOUNT").frame(width: LargeLedgerGrid.accountColumn, alignment: .leading)
+            Text("PLAN").frame(width: LargeLedgerGrid.planColumn, alignment: .leading)
+            Divider().frame(width: LargeLedgerGrid.separatorColumn, height: 15)
+            Text("5h").frame(width: LargeLedgerGrid.limitColumn)
+            Text("W").frame(width: LargeLedgerGrid.limitColumn)
+            Text("RESETS").frame(width: LargeLedgerGrid.resetColumn, alignment: .trailing)
+            Spacer(minLength: LargeLedgerGrid.trailingGutter)
         }
+        .frame(maxWidth: .infinity, alignment: .leading)
         .font(.caption2.weight(.medium)).foregroundStyle(.secondary)
         .accessibilityElement(children: .ignore)
         .accessibilityLabel(String(localized: "Account, plan, 5 hour limit, Weekly limit, resets"))
@@ -72,18 +72,33 @@ private struct LargeLedgerRow: View {
 
     var body: some View {
         HStack(spacing: 0) {
-            AccountCell(account: account, showsPlan: false).frame(width: 106, alignment: .leading)
+            AccountCell(account: account, showsPlan: false)
+                .frame(width: LargeLedgerGrid.accountColumn, alignment: .leading)
+                .clipped()
             Text(account.account.plan?.label ?? String(localized: "Unavailable"))
-                .font(.caption2).foregroundStyle(.secondary).lineLimit(1).frame(width: 48, alignment: .leading)
-            Divider().frame(height: 38).padding(.trailing, 4)
-            LedgerLimitCell(title: "5h", accessibilityTitle: String(localized: "5h"), kind: .fiveHour, remaining: account.fiveHourRemainingPercent).frame(width: 44)
-            LedgerLimitCell(title: "W", accessibilityTitle: String(localized: "Weekly"), kind: .weekly, remaining: account.weeklyRemainingPercent).frame(width: 44)
-            ResetFooter(reset: account.nearestReset, now: now, freshness: freshness).frame(width: 53, alignment: .trailing)
+                .font(.caption2).foregroundStyle(.secondary).lineLimit(1).truncationMode(.tail)
+                .frame(width: LargeLedgerGrid.planColumn, alignment: .leading)
+            Divider().frame(width: LargeLedgerGrid.separatorColumn, height: 38)
+            LedgerLimitCell(title: "5h", accessibilityTitle: String(localized: "5h"), kind: .fiveHour, remaining: account.fiveHourRemainingPercent).frame(width: LargeLedgerGrid.limitColumn)
+            LedgerLimitCell(title: "W", accessibilityTitle: String(localized: "Weekly"), kind: .weekly, remaining: account.weeklyRemainingPercent).frame(width: LargeLedgerGrid.limitColumn)
+            ResetFooter(reset: account.nearestReset, now: now, freshness: freshness)
+                .frame(width: LargeLedgerGrid.resetColumn, alignment: .trailing)
+            Spacer(minLength: LargeLedgerGrid.trailingGutter)
         }
+        .frame(maxWidth: .infinity, alignment: .leading)
         .accessibilityElement(children: .combine)
         .accessibilityLabel(Text(safeName(account.account.displayName)))
         .accessibilityValue(Text(AccountAccessibility.value(account: account, now: now, freshness: freshness)))
     }
+}
+
+enum LargeLedgerGrid {
+    static let accountColumn: CGFloat = 98
+    static let planColumn: CGFloat = 55
+    static let separatorColumn: CGFloat = 5
+    static let limitColumn: CGFloat = 44
+    static let resetColumn: CGFloat = 64
+    static let trailingGutter: CGFloat = 4
 }
 
 enum AccountAccessibility {
@@ -115,7 +130,11 @@ struct AccountCell: View {
         HStack(spacing: 7) {
             Circle().fill(account.statusColor).frame(width: 8, height: 8)
             VStack(alignment: .leading, spacing: 1) {
-                Text(safeName(account.account.displayName)).font(.caption.weight(.medium)).lineLimit(1)
+                Text(safeName(account.account.displayName))
+                    .font(.caption.weight(.medium))
+                    .lineLimit(1)
+                    .truncationMode(.tail)
+                    .layoutPriority(-1)
                 if showsPlan, account.account.plan != nil { Text(account.account.plan!.label).font(.caption2).foregroundStyle(.secondary).lineLimit(1) }
             }
         }

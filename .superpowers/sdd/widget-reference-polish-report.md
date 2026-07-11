@@ -9,19 +9,21 @@ Final focused polish of the production Precision Ledger widget against
 
 ## Changes
 
-- Applied `WidgetLayoutMetrics.ledgerHorizontalInset` to medium and large
-  ledger content. The measured six-point gutter protects the content without
-  compressing the six-account large layout; its regression assertion now
-  matches the production value.
-- Added two points of top clearance and slightly increased stack spacing for
-  the medium and large headers.
+- Applied the one shared `WidgetLayoutMetrics.surfaceInset` inside the material
+  surface for all widget families. The material now fills the widget canvas,
+  while small, medium, and large content share the same visible internal
+  gutter without family-specific padding.
 - Reduced the ledger rings from 22/3 to 20/2 points and reduced adjacent
   percentage weight. Percentages remain adjacent to clean rings, not inside
   them; normal 5h remains blue and weekly remains purple.
-- Rebalanced large-ledger column widths after applying the gutter, eliminating
-  account/plan overlap while preserving the 338×354 widget bound.
+- Defined a shared large-ledger grid that fits the 338pt canvas after the
+  surface inset, reserves a four-point trailing gutter, and limits truncation
+  to expendable account/plan labels while preserving reset status text.
 - Made deterministic healthy render fixtures two minutes old. The production
   header now renders `2m`, with a unit test for the exact compact-recency value.
+- Widened the large reset column from 53 to 64 points and rebalanced only the
+  adjacent account/plan columns. The unavailable reset state now renders in
+  full without changing the widget bounds or ledger order.
 
 ## Visual inspection
 

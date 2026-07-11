@@ -18,8 +18,6 @@ struct MediumWidgetView: View {
                 }
             }
         }
-        .padding(.top, 2)
-        .padding(.horizontal, WidgetLayoutMetrics.ledgerHorizontalInset)
     }
 }
 
