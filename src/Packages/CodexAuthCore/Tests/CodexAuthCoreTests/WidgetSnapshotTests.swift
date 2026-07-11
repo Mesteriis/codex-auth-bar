@@ -65,6 +65,50 @@ import Testing
         #expect(snapshot.accounts[0].weekly?.remainingPercent == 100)
     }
 
+    @Test func rawIdentityCandidatesFallBackToOrdinalName() {
+        for candidate in ["identity-key", "synthetic-account", "synthetic-user"] {
+            let account = widgetAccount(
+                key: "identity-key",
+                email: "person@example.com",
+                alias: candidate,
+                fiveHourUsed: 0,
+                weeklyUsed: 0
+            )
+
+            let snapshot = WidgetSnapshotProjector.project(
+                RegistryV4(accounts: [account]),
+                fallbackName: { "Account \($0)" }
+            )
+
+            #expect(snapshot.accounts[0].displayName == "Account 1")
+        }
+    }
+
+    @Test func unsafeCallerFallbackFallsBackToOrdinalName() {
+        let account = widgetAccount(
+            key: "identity-key",
+            email: "person@example.com",
+            fiveHourUsed: 0,
+            weeklyUsed: 0
+        )
+        let unsafeFallbacks = [
+            account.email,
+            account.accountKey.rawValue,
+            account.chatGPTAccountID,
+            account.chatGPTUserID,
+            "sk-not-a-safe-widget-name",
+        ]
+
+        for fallback in unsafeFallbacks {
+            let snapshot = WidgetSnapshotProjector.project(
+                RegistryV4(accounts: [account]),
+                fallbackName: { _ in fallback }
+            )
+
+            #expect(snapshot.accounts[0].displayName == "Account 1")
+        }
+    }
+
     @Test func expiredWindowPresentsAsFullyAvailable() {
         let limit = WidgetLimitSnapshot(remainingPercent: 7, resetsAtSeconds: 100)
         #expect(limit.effectiveRemainingPercent(at: Date(timeIntervalSince1970: 99)) == 7)

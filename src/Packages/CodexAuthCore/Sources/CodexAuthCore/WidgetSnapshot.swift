@@ -101,7 +101,11 @@ public enum WidgetSnapshotProjector {
         let accounts = ordered.enumerated().map { index, account in
             WidgetAccountSnapshot(
                 id: stableID(account.accountKey),
-                displayName: safeName(account, fallback: fallbackName(index + 1)),
+                displayName: safeName(
+                    account,
+                    fallback: fallbackName(index + 1),
+                    ordinal: index + 1
+                ),
                 plan: account.resolvedPlan,
                 isActive: account.accountKey == registry.activeAccountKey,
                 fiveHour: limit(account.lastUsage?.primary, at: generatedAt),
@@ -123,17 +127,33 @@ public enum WidgetSnapshotProjector {
     private static func safeCandidate(_ account: AccountRecord) -> String {
         [account.alias, account.accountName ?? ""]
             .map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
-            .first(where: isSafeName) ?? ""
+            .first { isSafeName($0, for: account) } ?? ""
     }
 
-    private static func safeName(_ account: AccountRecord, fallback: String) -> String {
+    private static func safeName(_ account: AccountRecord, fallback: String, ordinal: Int) -> String {
         let candidate = safeCandidate(account)
-        let value = candidate.isEmpty ? fallback : candidate
+        let fallback = fallback.trimmingCharacters(in: .whitespacesAndNewlines)
+        let value: String
+        if !candidate.isEmpty {
+            value = candidate
+        } else if isSafeName(fallback, for: account) {
+            value = fallback
+        } else {
+            value = "Account \(ordinal)"
+        }
         return value.count > 30 ? String(value.prefix(29)) + "…" : value
     }
 
-    private static func isSafeName(_ value: String) -> Bool {
-        !value.isEmpty && !value.contains("@") && SecretRedactor.redact(value) == value
+    private static func isSafeName(_ value: String, for account: AccountRecord) -> Bool {
+        !value.isEmpty &&
+            !value.contains("@") &&
+            SecretRedactor.redact(value) == value &&
+            !identityValues(for: account).contains { value.contains($0) }
+    }
+
+    private static func identityValues(for account: AccountRecord) -> [String] {
+        [account.accountKey.rawValue, account.chatGPTAccountID, account.chatGPTUserID]
+            .filter { !$0.isEmpty }
     }
 
     private static func limit(_ window: RateLimitWindow?, at date: Date) -> WidgetLimitSnapshot? {
