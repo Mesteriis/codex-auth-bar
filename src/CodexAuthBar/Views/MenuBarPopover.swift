@@ -30,6 +30,7 @@ struct MenuBarPopover: View {
             HStack {
                 Button("Previous") { Task { await model.switchPrevious() } }
                     .disabled(model.previousAccountKey == nil)
+                    .accessibilityIdentifier("CodexAuthBar.previous")
                 Menu("Add") {
                     Button("Browser login") { Task { await model.login(deviceCode: false) } }
                     Divider()

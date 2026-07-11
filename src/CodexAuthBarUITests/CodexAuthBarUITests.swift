@@ -30,7 +30,7 @@ final class CodexAuthBarUITests: XCTestCase {
         search.click()
         search.typeText("work")
         search.typeKey(.tab, modifierFlags: [])
-        XCTAssertTrue(app.buttons["Previous"].exists)
-        XCTAssertTrue(app.buttons["Manage…"].exists)
+        XCTAssertTrue(app.descendants(matching: .any)["CodexAuthBar.previous"].waitForExistence(timeout: 2))
+        XCTAssertTrue(app.descendants(matching: .any)["CodexAuthBar.manage"].waitForExistence(timeout: 2))
     }
 }
