@@ -4,12 +4,18 @@ import WidgetKit
 struct CodexAuthWidgetView: View {
     @Environment(\.widgetFamily) private var family
     let entry: CodexWidgetEntry
+    private let previewFamily: WidgetFamily?
+
+    init(entry: CodexWidgetEntry, previewFamily: WidgetFamily? = nil) {
+        self.entry = entry
+        self.previewFamily = previewFamily
+    }
 
     var body: some View {
         Group {
             switch entry.loadState {
             case .loaded:
-                switch family {
+                switch previewFamily ?? family {
                 case .systemSmall: SmallWidgetView(entry: entry)
                 case .systemMedium: MediumWidgetView(entry: entry)
                 case .systemLarge: LargeWidgetView(entry: entry)

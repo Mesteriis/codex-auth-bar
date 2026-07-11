@@ -18,31 +18,33 @@ enum WidgetPreviewHarness {
         let snapshot = WidgetSnapshot(generatedAtMilliseconds: Int64(now.addingTimeInterval(-freshnessAge).timeIntervalSince1970 * 1_000), accounts: accounts)
         return CodexWidgetEntry(date: now, snapshot: snapshot, loadState: .loaded)
     }
-    static let healthy = entry()
+    static let healthy = entry(count: 7)
     static let warning = entry(remaining: 19)
     static let critical = entry(remaining: 9)
     static let unavailable = entry(remaining: nil)
     static let empty = CodexWidgetEntry(date: now, snapshot: nil, loadState: .missing)
     static let stale = entry(freshnessAge: 86_400, count: 7)
 
+    static func healthy(family: WidgetFamily) -> CodexWidgetEntry {
+        entry(count: accountCount(for: family))
+    }
+
     @ViewBuilder
     static func view(
         family: WidgetFamily,
         colorScheme: ColorScheme
     ) -> some View {
-        Group {
-            switch family {
-            case .systemSmall:
-                SmallWidgetView(entry: healthy)
-            case .systemMedium:
-                MediumWidgetView(entry: healthy)
-            case .systemLarge:
-                LargeWidgetView(entry: healthy)
-            default:
-                SmallWidgetView(entry: healthy)
-            }
+        CodexAuthWidgetView(entry: healthy(family: family), previewFamily: family)
+            .environment(\.colorScheme, colorScheme)
+    }
+
+    private static func accountCount(for family: WidgetFamily) -> Int {
+        switch family {
+        case .systemSmall: 1
+        case .systemMedium: 3
+        case .systemLarge: 6
+        default: 1
         }
-        .preferredColorScheme(colorScheme)
     }
 }
 

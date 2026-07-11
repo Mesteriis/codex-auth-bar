@@ -105,8 +105,19 @@ final class CodexAuthWidgetTests: XCTestCase {
     @MainActor
     private func assertRenderAttachment(for family: WidgetFamily, name: String) throws {
         let size = WidgetRenderFixture.size(for: family)
+        XCTAssertEqual(
+            WidgetPreviewHarness.healthy(family: family).snapshot?.accounts.count,
+            WidgetRenderFixture.accountCount(for: family)
+        )
         let view = WidgetPreviewHarness.view(family: family, colorScheme: .dark)
-        let renderer = ImageRenderer(content: view.frame(width: size.width, height: size.height))
+        let renderer = ImageRenderer(
+            content: ZStack {
+                WidgetRenderFixture.darkCanvas
+                view
+            }
+            .frame(width: size.width, height: size.height)
+            .environment(\.colorScheme, .dark)
+        )
         renderer.scale = WidgetRenderFixture.scale
 
         let image = try XCTUnwrap(renderer.nsImage)
@@ -149,6 +160,7 @@ final class CodexAuthWidgetTests: XCTestCase {
 
 private enum WidgetRenderFixture {
     static let scale: CGFloat = 2
+    static let darkCanvas = Color(red: 0.10, green: 0.12, blue: 0.16)
 
     static func size(for family: WidgetFamily) -> CGSize {
         switch family {
@@ -160,6 +172,15 @@ private enum WidgetRenderFixture {
             CGSize(width: 338, height: 354)
         default:
             CGSize(width: 158, height: 158)
+        }
+    }
+
+    static func accountCount(for family: WidgetFamily) -> Int {
+        switch family {
+        case .systemSmall: 1
+        case .systemMedium: 3
+        case .systemLarge: 6
+        default: 1
         }
     }
 }
