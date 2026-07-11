@@ -94,6 +94,23 @@ enum WidgetStrings {
             String(localized: "W")
         )
     }
+
+    static func relativeTime(until date: Date, now: Date) -> String {
+        let formatter = RelativeDateTimeFormatter()
+        return formatter.localizedString(for: date, relativeTo: now)
+    }
+
+    static func relativeTime(since date: Date, now: Date = .now) -> String {
+        let formatter = RelativeDateTimeFormatter()
+        return formatter.localizedString(for: date, relativeTo: now)
+    }
+
+    static func compactRecency(since date: Date, now: Date = .now) -> String {
+        let seconds = max(0, now.timeIntervalSince(date))
+        if seconds < 60 { return String(localized: "now") }
+        if seconds < 60 * 60 { return String(format: String(localized: "%dm"), Int(seconds / 60)) }
+        return String(format: String(localized: "%dh"), Int(seconds / 3_600))
+    }
 }
 
 enum WidgetLayoutMetrics {
@@ -102,7 +119,8 @@ enum WidgetLayoutMetrics {
 }
 
 struct LimitRing: View {
-    let title: LocalizedStringKey
+    let title: String
+    let accessibilityTitle: String
     let remaining: Double?
     let diameter: CGFloat
     let lineWidth: CGFloat
@@ -130,6 +148,9 @@ struct LimitRing: View {
             }
         }
         .frame(width: diameter, height: diameter)
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(accessibilityTitle)
+        .accessibilityValue(LimitAccessibility.value(title: accessibilityTitle, remaining: remaining))
     }
 }
 
@@ -148,7 +169,9 @@ struct DualLimitRing: View {
             VStack(spacing: 3) {
                 Text(WidgetStrings.percent(fiveHourRemaining))
                     .font(.title3.monospacedDigit().weight(.bold))
-                Text(WidgetStrings.pairLegend(fiveHour: fiveHourRemaining, weekly: weeklyRemaining)).font(.caption2).foregroundStyle(.secondary)
+                Text(String(localized: "5h")).font(.caption2).foregroundStyle(.secondary)
+                Text(WidgetStrings.percent(weeklyRemaining)).font(.caption.monospacedDigit().weight(.semibold)).foregroundStyle(LimitSeverity(remaining: weeklyRemaining).color)
+                Text(String(localized: "W")).font(.caption2).foregroundStyle(.secondary)
             }
         }
         .frame(width: diameter, height: diameter)

@@ -64,6 +64,13 @@ final class CodexAuthWidgetTests: XCTestCase {
         XCTAssertGreaterThan(WidgetLayoutMetrics.ledgerHorizontalInset, 0)
     }
 
+    func testPreviewLedgerIncludesReferenceLikeVariety() throws {
+        let accounts = try XCTUnwrap(WidgetPreviewHarness.healthy(family: .systemLarge).snapshot?.accounts)
+        XCTAssertEqual(accounts.map(\.plan), [.pro, .team, .enterprise, .team, .pro, .free])
+        XCTAssertEqual(accounts.map { $0.fiveHour?.remainingPercent }, [72, 38, 91, 18, 57, nil])
+        XCTAssertEqual(accounts.map { $0.weekly?.remainingPercent }, [46, 80, 63, 22, 34, nil])
+    }
+
     func testAccessibilityValueIncludesNumberResetAndStaleness() {
         let value = LimitAccessibility.accountValue(fiveHourRemaining: 72, weeklyRemaining: nil, reset: Date(timeIntervalSince1970: 7_200), now: Date(timeIntervalSince1970: 0), freshness: .aging, locale: Locale(identifier: "en"))
         XCTAssertTrue(value.contains("72"))
@@ -83,13 +90,14 @@ final class CodexAuthWidgetTests: XCTestCase {
         let catalog = try JSONSerialization.jsonObject(with: data) as? [String: Any]
         let strings = try XCTUnwrap(catalog?["strings"] as? [String: Any])
 
-        for key in ["5h", "Weekly", "%@ limit unavailable", "data out of date", "Shows remaining Codex account limits."] {
+        for key in ["5h", "Weekly", "ACCOUNT", "PLAN", "RESETS", "%@ limit unavailable", "data out of date", "Shows remaining Codex account limits."] {
             let entry = try XCTUnwrap(strings[key] as? [String: Any])
             let localizations = try XCTUnwrap(entry["localizations"] as? [String: Any])
             let russian = try XCTUnwrap(localizations["ru"] as? [String: Any])
             let unit = try XCTUnwrap(russian["stringUnit"] as? [String: Any])
             XCTAssertNotEqual(unit["value"] as? String, key)
         }
+        XCTAssertNotNil(strings["Codex Auth Bar"])
     }
 
     @MainActor

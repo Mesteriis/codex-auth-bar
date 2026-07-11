@@ -5,14 +5,22 @@ import WidgetKit
 enum WidgetPreviewHarness {
     static let now = Date(timeIntervalSince1970: 1_700_000_000)
     static func entry(remaining: Double? = 72, freshnessAge: TimeInterval = 0, count: Int = 1) -> CodexWidgetEntry {
+        let names = ["Personal", "Work", "Research Lab", "Client Projects", "Long Account Name Example", "Legacy Sandbox"]
+        let plans: [PlanType?] = [.pro, .team, .enterprise, .team, .pro, .free]
+        let fiveHour = [72.0, 38.0, 91.0, 18.0, 57.0, nil]
+        let weekly = [46.0, 80.0, 63.0, 22.0, 34.0, nil]
+        let resetHours = [62.0, 131.0, 30.0, 6.7, 81.0, nil]
         let accounts = (0..<count).map { index in
-            WidgetAccountSnapshot(
+            let fixtureIndex = index % names.count
+            let fiveHourRemaining = remaining == 72 ? fiveHour[fixtureIndex] : remaining
+            let weeklyRemaining = remaining == 72 ? weekly[fixtureIndex] : remaining
+            return WidgetAccountSnapshot(
                 id: "preview-\(index)",
-                displayName: "Precision Ledger Account \(index + 1)",
-                plan: .plus,
+                displayName: names[fixtureIndex],
+                plan: plans[fixtureIndex],
                 isActive: index == 0,
-                fiveHour: remaining.map { WidgetLimitSnapshot(remainingPercent: $0, resetsAtSeconds: Int64(now.addingTimeInterval(7_200).timeIntervalSince1970)) },
-                weekly: remaining.map { WidgetLimitSnapshot(remainingPercent: $0, resetsAtSeconds: Int64(now.addingTimeInterval(86_400).timeIntervalSince1970)) }
+                fiveHour: fiveHourRemaining.map { WidgetLimitSnapshot(remainingPercent: $0, resetsAtSeconds: Int64(now.addingTimeInterval((resetHours[fixtureIndex] ?? 2) * 3_600).timeIntervalSince1970)) },
+                weekly: weeklyRemaining.map { WidgetLimitSnapshot(remainingPercent: $0, resetsAtSeconds: Int64(now.addingTimeInterval((resetHours[fixtureIndex] ?? 24) * 3_600).timeIntervalSince1970)) }
             )
         }
         let snapshot = WidgetSnapshot(generatedAtMilliseconds: Int64(now.addingTimeInterval(-freshnessAge).timeIntervalSince1970 * 1_000), accounts: accounts)
