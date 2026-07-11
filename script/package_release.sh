@@ -50,6 +50,20 @@ xcodebuild archive -project "$ROOT/CodexAuthBar.xcodeproj" -scheme CodexAuthBar 
 APP="$ARCHIVE/Products/Applications/CodexAuthBar.app"
 ARCHS="$(lipo -archs "$APP/Contents/MacOS/CodexAuthBar")"
 test "$ARCHS" = "x86_64 arm64" || test "$ARCHS" = "arm64 x86_64"
+WIDGET="$APP/Contents/PlugIns/CodexAuthWidget.appex"
+test -d "$WIDGET"
+WIDGET_ARCHS="$(lipo -archs "$WIDGET/Contents/MacOS/CodexAuthWidget")"
+test "$WIDGET_ARCHS" = "x86_64 arm64" || test "$WIDGET_ARCHS" = "arm64 x86_64"
+codesign --verify --strict --verbose=2 "$WIDGET"
+codesign -d --entitlements :- "$APP" >"$DIST/app-entitlements.plist"
+codesign -d --entitlements :- "$WIDGET" >"$DIST/widget-entitlements.plist"
+plutil -extract 'com\.apple\.security\.application-groups' xml1 -o - \
+  "$DIST/app-entitlements.plist" | grep -q 'group.com.mesteriis.CodexAuthBar'
+plutil -extract 'com\.apple\.security\.application-groups' xml1 -o - \
+  "$DIST/widget-entitlements.plist" | grep -q 'group.com.mesteriis.CodexAuthBar'
+plutil -extract 'com\.apple\.security\.app-sandbox' raw -o - \
+  "$DIST/widget-entitlements.plist" | grep -q '^true$'
+! plutil -p "$DIST/widget-entitlements.plist" | grep -q 'network.client'
 codesign --verify --deep --strict --verbose=2 "$APP"
 codesign -d --verbose=4 "$APP" 2>&1 | grep -q 'flags=.*runtime'
 ditto -c -k --keepParent "$APP" "$DIST/CodexAuthBar.zip"

@@ -20,6 +20,10 @@ jobs:
           xcodebuild test -project CodexAuthBar.xcodeproj -scheme CodexAuthBar
           -destination 'platform=macOS' -skip-testing:CodexAuthBarUITests
           CODE_SIGNING_ALLOWED=NO
+      - name: Widget tests
+        run: >-
+          xcodebuild test -project CodexAuthBar.xcodeproj -scheme CodexAuthWidget
+          -destination 'platform=macOS' CODE_SIGNING_ALLOWED=NO
       - name: UI tests
         run: >-
           xcodebuild test -project CodexAuthBar.xcodeproj -scheme CodexAuthBarUITests
@@ -38,6 +42,19 @@ jobs:
           grep -q 'ENABLE_HARDENED_RUNTIME = YES' build/release-settings.txt
           grep -q 'MACOSX_DEPLOYMENT_TARGET = 14.0' build/release-settings.txt
           grep -q 'SWIFT_STRICT_CONCURRENCY = complete' build/release-settings.txt
+          xcodebuild -project CodexAuthBar.xcodeproj -target CodexAuthWidget \
+            -configuration Release -showBuildSettings > build/widget-settings.txt
+          grep -q 'ENABLE_APP_SANDBOX = YES' build/widget-settings.txt
+          grep -q 'APPLICATION_EXTENSION_API_ONLY = YES' build/widget-settings.txt
+          grep -q 'MACOSX_DEPLOYMENT_TARGET = 14.0' build/widget-settings.txt
+          grep -q 'SWIFT_STRICT_CONCURRENCY = complete' build/widget-settings.txt
+          plutil -lint src/Entitlements/CodexAuthBar.entitlements
+          plutil -lint src/Entitlements/CodexAuthWidget.entitlements
+          plutil -extract 'com\.apple\.security\.app-sandbox' raw -o - \
+            src/Entitlements/CodexAuthWidget.entitlements | grep -q '^true$'
+          plutil -extract 'com\.apple\.security\.application-groups' xml1 -o - \
+            src/Entitlements/CodexAuthWidget.entitlements | grep -q 'group.com.mesteriis.CodexAuthBar'
+          ! plutil -p src/Entitlements/CodexAuthWidget.entitlements | grep -q 'network.client'
       - name: Universal unsigned build
         run: >-
           xcodebuild build -project CodexAuthBar.xcodeproj -scheme CodexAuthBar
@@ -49,6 +66,10 @@ jobs:
           APP=build/ci-derived/Build/Products/Release/CodexAuthBar.app
           ARCHS="$(lipo -archs "$APP/Contents/MacOS/CodexAuthBar")"
           test "$ARCHS" = "x86_64 arm64" || test "$ARCHS" = "arm64 x86_64"
+          WIDGET="$APP/Contents/PlugIns/CodexAuthWidget.appex"
+          test -d "$WIDGET"
+          ARCHS="$(lipo -archs "$WIDGET/Contents/MacOS/CodexAuthWidget")"
+          test "$ARCHS" = "x86_64 arm64" || test "$ARCHS" = "arm64 x86_64"
           ditto -c -k --keepParent "$APP" CodexAuthBar-unsigned.zip
       - uses: actions/upload-artifact@v7
         with:
@@ -56,4 +77,9 @@ jobs:
           path: CodexAuthBar-unsigned.zip
           if-no-files-found: error
       - name: Secret fixture guard
-        run: '! rg -n "sk-[A-Za-z0-9_-]{20,}|eyJ[A-Za-z0-9_-]{30,}" src/Packages/CodexAuthCore/Tests src/CodexAuthBarTests src/CodexAuthBarUITests'
+        run: |
+          ! rg -n "sk-[A-Za-z0-9_-]{20,}|eyJ[A-Za-z0-9_-]{30,}" \
+            src/Packages/CodexAuthCore/Tests src/CodexAuthBarTests \
+            src/CodexAuthBarUITests src/CodexAuthWidgetTests
+          ! rg -n 'access_token|refresh_token|openai_api_key|chatgpt_account_id|chatgpt_user_id|email|auth_mode' \
+            src/Packages/CodexAuthCore/Sources/CodexAuthCore/WidgetSnapshot.swift

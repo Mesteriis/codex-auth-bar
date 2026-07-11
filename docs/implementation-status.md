@@ -19,10 +19,11 @@ root because they are build and repository infrastructure rather than source.
 | Usage and local fallback | `ChatGPTUsageService.swift`, `LocalUsageScanner.swift`, `Usage.swift` | URLProtocol-only API tests, redirect/status parsing, five-request concurrency bound and activation-time local fallback tests |
 | Login and Codex control | `CodexProcessController.swift`, `ProcessContracts.swift` | failed/cancelled login byte identity, scratch cleanup, API-key stdin and credential-store tests |
 | Menu bar and management UI | `CodexAuthBarApp.swift`, `MenuBarPopover.swift`, `ManagementView.swift`, `SettingsView.swift`, `Localizable.xcstrings` | app tests plus menu-bar launch, keyboard search and VoiceOver-labelled action UI tests |
+| Widget extension/process boundary | `WidgetSnapshot.swift`, `WidgetSnapshotStore.swift`, `WidgetSnapshotPublisher.swift`, `src/CodexAuthWidget`, App Group entitlements | core/app/widget tests; fixture scan rejects credential and identity coding keys; CI checks extension sandbox, App Group, API-only settings, and universal nested binary |
 | Config profiles | `ProfileName.swift`, `ProfileStore.swift`, profile UI and process controller | traversal rejection, CRUD and shell-quoting/self-delete command tests |
 | Opt-in auto-switch | `AutoSwitchPolicy.swift`, `AppModel.swift` | Free-plan guard, threshold, scoring and candidate-selection tests |
 | Experimental codext | `Codext.swift`, `CodextManager.swift` | pinned hashes, size/origin checks, bad hash and archive-traversal rejection tests |
-| OSS, CI and release | `LICENSE`, `THIRD_PARTY_NOTICES.md`, public docs, `.github/workflows`, `script/package_release.sh` | unit/app/UI/analyze/universal/fixture scan CI jobs and signed-release verification commands |
+| OSS, CI and release | `LICENSE`, `THIRD_PARTY_NOTICES.md`, public docs, `.github/workflows`, `script/package_release.sh` | unit/app/widget/UI/analyze/universal/fixture scan CI jobs, widget preview QA artifacts, and signed nested-extension verification commands |
 
 ## Release boundary
 
@@ -44,12 +45,18 @@ xcodebuild test -project CodexAuthBar.xcodeproj -scheme CodexAuthBar \
 xcodebuild test -project CodexAuthBar.xcodeproj -scheme CodexAuthBarUITests \
   -destination 'platform=macOS' CODE_SIGN_STYLE=Manual CODE_SIGN_IDENTITY=- \
   DEVELOPMENT_TEAM=
+xcodebuild test -project CodexAuthBar.xcodeproj -scheme CodexAuthWidget \
+  -destination 'platform=macOS' CODE_SIGNING_ALLOWED=NO
 xcodebuild analyze -project CodexAuthBar.xcodeproj -scheme CodexAuthBar \
   CODE_SIGNING_ALLOWED=NO
 ./script/build_and_run.sh --verify
 ```
 
-CI additionally checks a two-architecture unsigned Release build, build-setting
-contracts, secret-safe fixtures and packaging. A signed release additionally
-runs `codesign --verify --deep --strict`, `spctl --assess`, notarization,
-stapling validation, and publishes a SHA-256 checksum.
+CI additionally checks host and widget build-setting contracts, both entitlement
+files, a two-architecture unsigned Release app plus nested widget extension,
+secret-safe fixtures, snapshot coding keys, and packaging. A signed release
+additionally verifies the nested extension signature and its signed App Group /
+sandbox entitlements before running `codesign --verify --deep --strict`,
+`spctl --assess`, notarization, stapling validation, and publishing a SHA-256
+checksum. The visual reference and rendered widget QA artifacts are recorded in
+[`qa/widget-design-qa.md`](qa/widget-design-qa.md).

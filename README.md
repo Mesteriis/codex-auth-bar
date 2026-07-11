@@ -15,6 +15,7 @@ independent Swift implementation and is not affiliated with OpenAI or Loongphy.
 - Import/export standard Codex auth files and CLIProxyAPI JSON.
 - Account aliases, previous-account switching, removal, backups, and recovery.
 - 5-hour/weekly usage display with remote or local-only refresh.
+- Read-only macOS widgets for small, medium, and large sizes.
 - Independent discovery and launch of `<name>.config.toml` profiles.
 - Opt-in automatic switching policy.
 - Experimental, checksum-verified codext integration.
@@ -41,6 +42,34 @@ All Swift application, package, and test source is stored under `src/`.
 The app intentionally runs without App Sandbox because it manages
 `~/.codex/auth.json`, starts the Codex CLI, and restarts the Codex desktop app.
 It does not request Full Disk Access, Accessibility, or screen recording.
+
+## Widgets
+
+Launch Codex Auth Bar once before adding its small, medium, or large widget in
+macOS. The widget is read-only: selecting it opens the app's account view via
+the `codexauthbar://accounts` deep link; it never switches accounts or calls a
+network service.
+
+The app publishes a sanitized snapshot to its App Group. It contains only
+derived account-display and usage-limit information needed to render the
+widget; it explicitly contains no access token, refresh token, API key, ChatGPT
+account/user ID, email address, or authentication mode. Contributors need an
+Apple signing/provisioning setup that enables
+`group.com.mesteriis.CodexAuthBar` for both the containing app and widget
+extension to exercise that shared container in a signed build.
+
+Automatic WidgetKit reload requests are coalesced to at most once per 15
+minutes; the normal widget timeline refresh is 30 minutes. A stale or unavailable
+snapshot remains visibly stale/offline rather than initiating a refresh. If the
+Usage API is disabled in Settings, the widget shows only the last safe local
+snapshot and performs no Usage API work itself.
+
+The selected visual reference is the Precision Ledger design. Reproducible QA
+notes and the small, medium, and large rendered artifacts are in
+[`docs/qa/widget-design-qa.md`](docs/qa/widget-design-qa.md),
+[`docs/qa/widget-small.png`](docs/qa/widget-small.png),
+[`docs/qa/widget-medium.png`](docs/qa/widget-medium.png), and
+[`docs/qa/widget-large.png`](docs/qa/widget-large.png).
 
 ## Security and privacy
 
