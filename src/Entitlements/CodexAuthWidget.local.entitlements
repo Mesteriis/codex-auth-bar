@@ -4,6 +4,6 @@
   <key>com.apple.security.app-sandbox</key><true/>
   <key>com.apple.security.application-groups</key>
   <array><string>group.com.mesteriis.CodexAuthBar</string></array>
-  <key>com.apple.security.temporary-exception.files.home-relative-path.read-only</key>
-  <array><string>/Library/Application Support/CodexAuthBar/widget/</string></array>
+  <key>com.apple.security.temporary-exception.files.absolute-path.read-only</key>
+  <array><string>/Users/Shared/CodexAuthBar/</string></array>
 </dict></plist>

@@ -3,12 +3,10 @@ import Testing
 @testable import CodexAuthCore
 
 @Suite struct WidgetSnapshotTests {
-    @Test func localUnsignedSnapshotUsesHostApplicationSupport() {
-        let home = URL(fileURLWithPath: "/Users/example", isDirectory: true)
-
+    @Test func localUnsignedSnapshotUsesPerUserSharedDirectory() {
         #expect(
-            CodexWidgetContract.hostApplicationSupportContainerURL(homeDirectory: home).path
-                == "/Users/example/Library/Application Support/CodexAuthBar"
+            CodexWidgetContract.localUnsignedContainerURL(userID: 501).path
+                == "/Users/Shared/CodexAuthBar/501"
         )
     }
 

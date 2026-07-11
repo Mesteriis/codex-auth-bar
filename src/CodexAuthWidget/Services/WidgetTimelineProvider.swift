@@ -1,6 +1,7 @@
 import CodexAuthCore
 import Darwin
 import Foundation
+import Security
 import WidgetKit
 
 struct CodexWidgetProvider: TimelineProvider {
@@ -37,29 +38,43 @@ struct CodexWidgetProvider: TimelineProvider {
 
     private func loadSnapshot(now: Date) -> SnapshotLoadResult {
         var stores: [WidgetSnapshotStore] = []
-        if let containerURL = FileManager.default.containerURL(
+        if !RuntimeWidgetCodeSignature.hasTeamIdentifier {
+            stores.append(
+                WidgetSnapshotStore(
+                    containerURL: CodexWidgetContract.localUnsignedContainerURL(userID: getuid())
+                )
+            )
+        } else if let containerURL = FileManager.default.containerURL(
             forSecurityApplicationGroupIdentifier: CodexWidgetContract.appGroup
         ) {
             stores.append(WidgetSnapshotStore(containerURL: containerURL))
-        }
-        if let homeDirectory = HostUserDirectory.current {
-            stores.append(
-                WidgetSnapshotStore(
-                    containerURL: CodexWidgetContract.hostApplicationSupportContainerURL(
-                        homeDirectory: homeDirectory
-                    )
-                )
-            )
         }
 
         return WidgetSnapshotLoader(stores: stores).load(now: now)
     }
 }
 
-private enum HostUserDirectory {
-    static var current: URL? {
-        guard let record = getpwuid(getuid()), let path = record.pointee.pw_dir else { return nil }
-        return URL(fileURLWithPath: String(cString: path), isDirectory: true)
+private enum RuntimeWidgetCodeSignature {
+    static var hasTeamIdentifier: Bool {
+        var code: SecCode?
+        guard SecCodeCopySelf(SecCSFlags(rawValue: 0), &code) == errSecSuccess,
+              let code
+        else { return false }
+        var staticCode: SecStaticCode?
+        guard SecCodeCopyStaticCode(code, SecCSFlags(rawValue: 0), &staticCode) == errSecSuccess,
+              let staticCode
+        else { return false }
+
+        var information: CFDictionary?
+        guard SecCodeCopySigningInformation(
+            staticCode,
+            SecCSFlags(rawValue: kSecCSSigningInformation),
+            &information
+        ) == errSecSuccess,
+              let dictionary = information as? [String: Any]
+        else { return false }
+
+        return dictionary[kSecCodeInfoTeamIdentifier as String] as? String != nil
     }
 }
 

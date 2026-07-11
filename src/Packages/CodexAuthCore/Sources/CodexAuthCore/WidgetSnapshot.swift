@@ -175,9 +175,9 @@ public enum CodexWidgetContract {
     public static let kind = "com.mesteriis.CodexAuthBar.accounts"
     public static let appGroup = "group.com.mesteriis.CodexAuthBar"
 
-    public static func hostApplicationSupportContainerURL(homeDirectory: URL) -> URL {
-        homeDirectory
-            .appending(path: "Library/Application Support")
+    public static func localUnsignedContainerURL(userID: UInt32) -> URL {
+        URL(fileURLWithPath: "/Users/Shared", isDirectory: true)
             .appending(path: "CodexAuthBar", directoryHint: .isDirectory)
+            .appending(path: String(userID), directoryHint: .isDirectory)
     }
 }

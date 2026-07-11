@@ -158,10 +158,11 @@ require entitlements. Production resolves the container with
 
 Developer ID builds use the App Group as the primary and expected transport.
 For explicitly unsigned local packages, the host also writes the same
-credential-free snapshot under its Application Support directory. The local
-ad-hoc signing step gives the sandboxed widget a read-only temporary exception
-for that single `widget/` directory because App Groups are unavailable without
-an Apple provisioning profile. This exception is not part of release signing.
+credential-free snapshot to a per-user directory under `/Users/Shared`. The
+directory and file remain `0700` and `0600`; the local ad-hoc signing step gives
+the sandboxed widget a read-only temporary exception for the Codex Auth Bar
+subtree because App Groups are unavailable without an Apple provisioning
+profile. This exception is not part of release signing.
 
 Writing uses a private `widget/` directory, a temporary file in the same
 directory, `fsync`, atomic rename, and directory `fsync`. Readers either see the

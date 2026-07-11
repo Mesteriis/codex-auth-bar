@@ -1,5 +1,6 @@
 import CodexAuthCore
 import Foundation
+import Security
 import WidgetKit
 
 enum WidgetPublishReason: Sendable {
@@ -26,15 +27,27 @@ extension WidgetSnapshotStore: WidgetSnapshotWriting {
     func writeSnapshot(_ snapshot: WidgetSnapshot) async throws { try write(snapshot) }
 }
 
-struct ReplicatingWidgetSnapshotWriter: WidgetSnapshotWriting {
-    let primary: any WidgetSnapshotWriting
-    let mirrors: [any WidgetSnapshotWriting]
+enum RuntimeCodeSignature {
+    static var hasTeamIdentifier: Bool {
+        var code: SecCode?
+        guard SecCodeCopySelf(SecCSFlags(rawValue: 0), &code) == errSecSuccess,
+              let code
+        else { return false }
+        var staticCode: SecStaticCode?
+        guard SecCodeCopyStaticCode(code, SecCSFlags(rawValue: 0), &staticCode) == errSecSuccess,
+              let staticCode
+        else { return false }
 
-    func writeSnapshot(_ snapshot: WidgetSnapshot) async throws {
-        try await primary.writeSnapshot(snapshot)
-        for mirror in mirrors {
-            try? await mirror.writeSnapshot(snapshot)
-        }
+        var information: CFDictionary?
+        guard SecCodeCopySigningInformation(
+            staticCode,
+            SecCSFlags(rawValue: kSecCSSigningInformation),
+            &information
+        ) == errSecSuccess,
+              let dictionary = information as? [String: Any]
+        else { return false }
+
+        return dictionary[kSecCodeInfoTeamIdentifier as String] as? String != nil
     }
 }
 

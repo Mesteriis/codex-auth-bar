@@ -52,33 +52,32 @@ final class AppModel {
         let preference = UserDefaults.standard.string(forKey: "codexHome").flatMap {
             $0.isEmpty ? nil : URL(fileURLWithPath: $0, isDirectory: true)
         }
-        let isolatedTestHome = Self.isolatedTestHomeIfNeeded(preference: preference)
-        home = CodexHome.resolve(preference: preference ?? isolatedTestHome)
-        Self.lifecycleLogger.notice("Codex home resolved from: \(Self.homeSource(preference: preference), privacy: .public)")
+        let isolatedTestHome = Self.isolatedTestHomeIfNeeded()
+        let resolvedPreference = isolatedTestHome ?? preference
+        home = CodexHome.resolve(preference: resolvedPreference)
+        Self.lifecycleLogger.notice("Codex home resolved from: \(Self.homeSource(preference: resolvedPreference), privacy: .public)")
         repository = AccountRepository(home: home)
         profileStore = ProfileStore(home: home)
         usageService = ChatGPTUsageService(home: home)
         processController = CodexProcessController(home: home)
-        let localWidgetStore = WidgetSnapshotStore(
-            containerURL: CodexWidgetContract.hostApplicationSupportContainerURL(
-                homeDirectory: FileManager.default.homeDirectoryForCurrentUser
+        if !RuntimeCodeSignature.hasTeamIdentifier {
+            let containerURL = Self.isHostedTestProcess
+                ? home.root.appending(path: ".widget-test", directoryHint: .isDirectory)
+                : CodexWidgetContract.localUnsignedContainerURL(userID: getuid())
+            widgetPublisher = WidgetSnapshotPublisher(
+                store: WidgetSnapshotStore(containerURL: containerURL),
+                fallbackName: { "Account \($0)" }
             )
-        )
-        if let containerURL = FileManager.default.containerURL(
+            Self.lifecycleLogger.notice("widget_local_unsigned_store")
+        } else if let containerURL = FileManager.default.containerURL(
             forSecurityApplicationGroupIdentifier: CodexWidgetContract.appGroup
         ) {
             widgetPublisher = WidgetSnapshotPublisher(
-                store: ReplicatingWidgetSnapshotWriter(
-                    primary: WidgetSnapshotStore(containerURL: containerURL),
-                    mirrors: [localWidgetStore]
-                ),
+                store: WidgetSnapshotStore(containerURL: containerURL),
                 fallbackName: { "Account \($0)" }
             )
         } else {
-            widgetPublisher = WidgetSnapshotPublisher(
-                store: localWidgetStore,
-                fallbackName: { "Account \($0)" }
-            )
+            widgetPublisher = nil
             Self.lifecycleLogger.notice("widget_container_unavailable")
         }
         if let raw = UserDefaults.standard.string(forKey: "selectedProfile") { selectedProfile = ProfileName(raw) }
@@ -225,11 +224,17 @@ final class AppModel {
             : "default"
     }
 
-    private static func isolatedTestHomeIfNeeded(preference: URL?) -> URL? {
+    private static var isHostedTestProcess: Bool {
         #if DEBUG
-        guard preference == nil,
-              ProcessInfo.processInfo.environment["XCTestConfigurationFilePath"] != nil
-        else { return nil }
+        ProcessInfo.processInfo.environment["XCTestConfigurationFilePath"] != nil
+        #else
+        false
+        #endif
+    }
+
+    private static func isolatedTestHomeIfNeeded() -> URL? {
+        #if DEBUG
+        guard isHostedTestProcess else { return nil }
         if let override = ProcessInfo.processInfo.environment["CODEX_HOME"], !override.isEmpty {
             var isDirectory: ObjCBool = false
             if FileManager.default.fileExists(atPath: override, isDirectory: &isDirectory), isDirectory.boolValue {

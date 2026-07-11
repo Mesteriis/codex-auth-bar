@@ -3,21 +3,6 @@ import XCTest
 @testable import CodexAuthBar
 
 final class CodexAuthBarTests: XCTestCase {
-    func testWidgetSnapshotWriterReplicatesToLocalMirror() async throws {
-        let primary = RecordingWidgetStore()
-        let mirror = RecordingWidgetStore()
-        let writer = ReplicatingWidgetSnapshotWriter(primary: primary, mirrors: [mirror])
-
-        try await writer.writeSnapshot(
-            WidgetSnapshot(generatedAtMilliseconds: 1, accounts: [])
-        )
-
-        let primaryWrites = await primary.writeCount
-        let mirrorWrites = await mirror.writeCount
-        XCTAssertEqual(primaryWrites, 1)
-        XCTAssertEqual(mirrorWrites, 1)
-    }
-
     func testMenuAccountListShowsOnlyInactiveAccountsAtVisibleHeight() {
         let active = AccountRecord(
             accountKey: AccountKey("user::active"),
