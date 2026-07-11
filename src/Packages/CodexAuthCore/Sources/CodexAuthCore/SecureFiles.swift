@@ -167,13 +167,30 @@ enum SecureFiles {
             at: directory,
             includingPropertiesForKeys: [.contentModificationDateKey],
             options: [.skipsHiddenFiles]
-        ).filter { $0.lastPathComponent.hasPrefix(prefix) }
+        ).filter { $0.lastPathComponent.hasPrefix(prefix) && isManagedBackupName($0.lastPathComponent, baseName: baseName) }
         let sorted = try urls.sorted {
             let left = try $0.resourceValues(forKeys: [.contentModificationDateKey]).contentModificationDate ?? .distantPast
             let right = try $1.resourceValues(forKeys: [.contentModificationDateKey]).contentModificationDate ?? .distantPast
             return left > right
         }
         for url in sorted.dropFirst(count) { try removeRegularFile(url) }
+    }
+
+    private static func isManagedBackupName(_ name: String, baseName: String) -> Bool {
+        let prefix = "\(baseName).bak."
+        guard name.hasPrefix(prefix) else { return false }
+        let suffix = String(name.dropFirst(prefix.count))
+        let components = suffix.split(separator: ".", omittingEmptySubsequences: false)
+        guard components.count == 1 || components.count == 2,
+              components[0].count == 15,
+              components[0][components[0].index(components[0].startIndex, offsetBy: 8)] == "-"
+        else { return false }
+        let timestampDigits = components[0].filter { $0 != "-" }
+        guard timestampDigits.count == 14, timestampDigits.allSatisfy(\.isNumber) else { return false }
+        if components.count == 2 {
+            guard !components[1].isEmpty, components[1].allSatisfy(\.isNumber) else { return false }
+        }
+        return true
     }
 
     private static func openParentDirectory(of url: URL) throws -> Int32 {

@@ -48,7 +48,8 @@ Codex itself stores credentials in `auth.json`; managed snapshots therefore
 also contain plaintext credentials. Codex Auth Bar creates its managed
 directory with mode `0700` and sensitive files with mode `0600`.
 
-Remote refresh is enabled by default and sends the active access token only to:
+Remote refresh is enabled by default and sends each refreshed managed account's
+access token only to:
 
 - `https://chatgpt.com/backend-api/wham/usage`
 - `https://chatgpt.com/backend-api/accounts`

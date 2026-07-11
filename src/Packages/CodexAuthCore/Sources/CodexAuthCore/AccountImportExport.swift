@@ -168,6 +168,8 @@ public extension AccountRepository {
 
                 let existingIndex = loaded.registry.accounts.firstIndex { $0.accountKey == key }
                 if let existingIndex {
+                    loaded.registry.accounts[existingIndex].chatGPTAccountID = incoming.chatGPTAccountID
+                    loaded.registry.accounts[existingIndex].chatGPTUserID = incoming.chatGPTUserID
                     loaded.registry.accounts[existingIndex].email = incoming.email
                     loaded.registry.accounts[existingIndex].plan = incoming.plan
                     loaded.registry.accounts[existingIndex].authMode = incoming.authMode

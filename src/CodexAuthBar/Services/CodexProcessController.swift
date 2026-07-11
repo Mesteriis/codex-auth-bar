@@ -33,7 +33,12 @@ actor CodexProcessController: CodexProcessControlling {
     private var diagnosticsProcess: Process?
     private var diagnosticsBuffers: [UUID: DiagnosticsBuffer] = [:]
     private var loginProcess: Process?
-    init(home: CodexHome) { self.home = home }
+    private let explicitExecutable: URL?
+
+    init(home: CodexHome, explicitExecutable: URL? = nil) {
+        self.home = home
+        self.explicitExecutable = explicitExecutable
+    }
 
     func capabilities() async throws -> CodexCapabilities {
         let executable = try resolveExecutable()
@@ -65,7 +70,10 @@ actor CodexProcessController: CodexProcessControlling {
 
     func ensureFileCredentialStore() async throws {
         let result = try await capabilities()
-        guard !result.supportsDoctorJSON || result.credentialStore.permitsFileSwitching else {
+        if result.credentialStore == .unknown, !result.supportsDoctorJSON {
+            return
+        }
+        guard result.credentialStore.permitsFileSwitching else {
             throw ProcessError.incompatibleCredentialStore(result.credentialStore)
         }
     }
@@ -205,6 +213,7 @@ actor CodexProcessController: CodexProcessControlling {
 
     private func resolveExecutable() throws -> URL {
         var candidates: [URL] = []
+        if let explicitExecutable { candidates.append(explicitExecutable) }
         if let explicit = UserDefaults.standard.string(forKey: "codexCLIPath"), !explicit.isEmpty {
             candidates.append(URL(fileURLWithPath: explicit))
         }
@@ -282,8 +291,7 @@ actor CodexProcessController: CodexProcessControlling {
     }
 
     private func redact(_ text: String) -> String {
-        text.replacingOccurrences(of: #"eyJ[A-Za-z0-9._-]+"#, with: "<redacted-token>", options: .regularExpression)
-            .replacingOccurrences(of: #"sk-[A-Za-z0-9_-]+"#, with: "<redacted-key>", options: .regularExpression)
+        SecretRedactor.redact(text)
     }
 
 }

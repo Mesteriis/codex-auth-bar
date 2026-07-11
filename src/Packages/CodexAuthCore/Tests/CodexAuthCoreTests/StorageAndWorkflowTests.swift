@@ -12,7 +12,10 @@ struct StorageAndWorkflowTests {
 
         let attributes = try FileManager.default.attributesOfItem(atPath: fixture.home.registry.path)
         let mode = (attributes[.posixPermissions] as? NSNumber)?.intValue
+        let directoryAttributes = try FileManager.default.attributesOfItem(atPath: fixture.home.accounts.path)
+        let directoryMode = (directoryAttributes[.posixPermissions] as? NSNumber)?.intValue
         #expect(mode == 0o600)
+        #expect(directoryMode == 0o700)
 
         try Data("{}".utf8).write(to: fixture.home.registry)
         await #expect(throws: StorageError.concurrentModification) {
@@ -39,6 +42,7 @@ struct StorageAndWorkflowTests {
         try fixture.writeSnapshot(first.accountKey, text: "first-auth")
         try fixture.writeSnapshot(second.accountKey, text: "second-auth")
         try Data("first-auth".utf8).write(to: fixture.home.auth)
+        try FileManager.default.setAttributes([.posixPermissions: 0o640], ofItemAtPath: fixture.home.auth.path)
 
         let store = RegistryStore(home: fixture.home)
         let loaded = try await store.load()
@@ -56,7 +60,40 @@ struct StorageAndWorkflowTests {
         #expect(state.registry.activeAccountKey == second.accountKey)
         #expect(state.registry.previousActiveAccountKey == first.accountKey)
         #expect(try fixture.authBackups().count == 1)
+        #expect((try FileManager.default.attributesOfItem(atPath: fixture.home.auth.path)[.posixPermissions] as? NSNumber)?.intValue == 0o640)
+        let backup = try #require(fixture.authBackups().first)
+        #expect((try FileManager.default.attributesOfItem(atPath: backup.path)[.posixPermissions] as? NSNumber)?.intValue == 0o600)
         #expect(!FileManager.default.fileExists(atPath: fixture.home.transactionJournal.path))
+    }
+
+    @Test func backupNameAddsCollisionSuffixWithoutOverwriting() async throws {
+        let fixture = try TemporaryCodexHome()
+        let date = Date(timeIntervalSince1970: 1_786_441_861)
+        let first = SecureFiles.uniqueBackupURL(in: fixture.home.accounts, baseName: "auth.json", date: date)
+        try Data("first".utf8).write(to: first)
+        let second = SecureFiles.uniqueBackupURL(in: fixture.home.accounts, baseName: "auth.json", date: date)
+        try Data("second".utf8).write(to: second)
+        let third = SecureFiles.uniqueBackupURL(in: fixture.home.accounts, baseName: "auth.json", date: date)
+
+        #expect(second.lastPathComponent == first.lastPathComponent + ".1")
+        #expect(third.lastPathComponent == first.lastPathComponent + ".2")
+        #expect(try Data(contentsOf: first) == Data("first".utf8))
+    }
+
+    @Test func switchingToByteIdenticalActiveSnapshotDoesNotCreateBackup() async throws {
+        let fixture = try TemporaryCodexHome()
+        let active = account("active", email: "active@example.com")
+        try fixture.writeSnapshot(active.accountKey, text: "same-auth")
+        try Data("same-auth".utf8).write(to: fixture.home.auth)
+        let store = RegistryStore(home: fixture.home)
+        let loaded = try await store.load()
+        _ = try await store.commit(RegistryV4(activeAccountKey: active.accountKey, accounts: [active]), expected: loaded.fingerprint)
+        let repository = AccountRepository(home: fixture.home, store: store)
+
+        let receipt = try await repository.switchAccount(to: active.accountKey)
+
+        #expect(receipt.backupURL == nil)
+        #expect(try fixture.authBackups().isEmpty)
     }
 
     @Test func recoveryDiscardsPreparedJournalWhenPreviousAuthIsStillLive() async throws {
@@ -75,6 +112,9 @@ struct StorageAndWorkflowTests {
             targetAuthSHA256: sha256(Data("second-auth".utf8)),
             stage: "prepared"
         )
+        let journalText = String(decoding: try Data(contentsOf: fixture.home.transactionJournal), as: UTF8.self)
+        #expect(!journalText.contains("first-auth"))
+        #expect(!journalText.contains("second-auth"))
 
         let result = try await store.recoverPendingTransaction()
         let after = try await store.load()
@@ -103,6 +143,60 @@ struct StorageAndWorkflowTests {
         #expect(result == .registryReconciled)
         #expect(after.activeAccountKey == second.accountKey)
         #expect(after.previousActiveAccountKey == first.accountKey)
+    }
+
+    @Test func recoveryReconcilesTargetAuthEvenBeforeJournalStageAdvance() async throws {
+        let fixture = try TemporaryCodexHome()
+        let first = account("first", email: "first@example.com")
+        let second = account("second", email: "second@example.com")
+        try fixture.writeSnapshot(first.accountKey, text: "first-auth")
+        try fixture.writeSnapshot(second.accountKey, text: "second-auth")
+        try Data("second-auth".utf8).write(to: fixture.home.auth)
+        let store = RegistryStore(home: fixture.home)
+        let loaded = try await store.load()
+        _ = try await store.commit(RegistryV4(activeAccountKey: first.accountKey, accounts: [first, second]), expected: loaded.fingerprint)
+        try await store.writeJournal(
+            target: second.accountKey,
+            previous: first.accountKey,
+            targetAuthSHA256: sha256(Data("second-auth".utf8)),
+            previousAuthSHA256: sha256(Data("first-auth".utf8)),
+            stage: "prepared"
+        )
+
+        let result = try await store.recoverPendingTransaction()
+        let after = try await store.load().registry
+
+        #expect(result == .registryReconciled)
+        #expect(after.activeAccountKey == second.accountKey)
+        #expect(after.previousActiveAccountKey == first.accountKey)
+    }
+
+    @Test func recoveryOnlyRemovesJournalAfterRegistryCommit() async throws {
+        let fixture = try TemporaryCodexHome()
+        let first = account("first", email: "first@example.com")
+        let second = account("second", email: "second@example.com")
+        try fixture.writeSnapshot(first.accountKey, text: "first-auth")
+        try fixture.writeSnapshot(second.accountKey, text: "second-auth")
+        try Data("second-auth".utf8).write(to: fixture.home.auth)
+        let store = RegistryStore(home: fixture.home)
+        let loaded = try await store.load()
+        _ = try await store.commit(
+            RegistryV4(activeAccountKey: second.accountKey, previousActiveAccountKey: first.accountKey, accounts: [first, second]),
+            expected: loaded.fingerprint
+        )
+        try await store.writeJournal(
+            target: second.accountKey,
+            previous: first.accountKey,
+            targetAuthSHA256: sha256(Data("second-auth".utf8)),
+            previousAuthSHA256: sha256(Data("first-auth".utf8)),
+            stage: "auth_replaced"
+        )
+
+        let result = try await store.recoverPendingTransaction()
+
+        #expect(result == .journalRemoved)
+        #expect(try Data(contentsOf: fixture.home.auth) == Data("second-auth".utf8))
+        #expect(!FileManager.default.fileExists(atPath: fixture.home.transactionJournal.path))
     }
 
     @Test func recoveryNeverOverwritesUnknownExternalAuth() async throws {
@@ -175,6 +269,28 @@ struct StorageAndWorkflowTests {
 
         #expect(report.deletedFiles.isEmpty)
         #expect(FileManager.default.fileExists(atPath: snapshot.path))
+    }
+
+    @Test func cleanPrunesOnlyStrictlyRecognizedManagedBackupNames() async throws {
+        let fixture = try TemporaryCodexHome()
+        let store = RegistryStore(home: fixture.home)
+        let loaded = try await store.load()
+        _ = try await store.commit(RegistryV4(), expected: loaded.fingerprint)
+        let unrelated = fixture.home.accounts.appending(path: "auth.json.bak.notes")
+        try Data("user-owned".utf8).write(to: unrelated)
+        try FileManager.default.setAttributes([.modificationDate: Date(timeIntervalSince1970: 1)], ofItemAtPath: unrelated.path)
+        for index in 0..<7 {
+            let backup = fixture.home.accounts.appending(path: String(format: "auth.json.bak.20260711-01010%d", index))
+            try Data("managed-\(index)".utf8).write(to: backup)
+            try FileManager.default.setAttributes([.modificationDate: Date(timeIntervalSince1970: TimeInterval(index + 10))], ofItemAtPath: backup.path)
+        }
+        let repository = AccountRepository(home: fixture.home, store: store)
+
+        _ = try await repository.clean()
+        let names = try FileManager.default.contentsOfDirectory(atPath: fixture.home.accounts.path)
+
+        #expect(names.contains("auth.json.bak.notes"))
+        #expect(names.filter { $0.hasPrefix("auth.json.bak.20260711-") }.count == 5)
     }
 }
 

@@ -2,6 +2,11 @@
 
 Status: approved implementation baseline.
 
+The complete requirement-by-requirement baseline is recorded in
+[`plans/2026-07-11-codex-auth-bar-implementation.md`](plans/2026-07-11-codex-auth-bar-implementation.md),
+with the product and trust-boundary design in
+[`specs/2026-07-11-codex-auth-bar-design.md`](specs/2026-07-11-codex-auth-bar-design.md).
+
 The project is a native Swift 6 / SwiftUI menu-bar app for macOS 14+, built as
 a universal `arm64 + x86_64` binary. Compatibility is pinned to
 `Loongphy/codex-auth` commit

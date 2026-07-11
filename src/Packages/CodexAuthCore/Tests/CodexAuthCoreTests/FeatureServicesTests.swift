@@ -96,6 +96,24 @@ struct FeatureServicesTests {
         #expect(state.registry.accounts.first?.lastUsageAt != nil)
     }
 
+    @Test func allRemoteRefreshNeverExceedsFiveConcurrentUsageRequests() async throws {
+        let fixture = try FeatureFixture()
+        let accounts = (0..<12).map { record("remote-\($0)", remaining: 50) }
+        let store = RegistryStore(home: fixture.home)
+        let loaded = try await store.load()
+        _ = try await store.commit(RegistryV4(accounts: accounts), expected: loaded.fingerprint)
+        let tracker = ConcurrencyTracker()
+        let repository = AccountRepository(
+            home: fixture.home,
+            store: store,
+            usageFetcher: ConcurrencyTrackingUsageFetcher(tracker: tracker)
+        )
+
+        _ = try await repository.state(refresh: .allRemote)
+
+        #expect(await tracker.maximum == 5)
+    }
+
     @Test func stateSyncsExternallyChangedAuthIntoRegistry() async throws {
         let fixture = try FeatureFixture()
         let auth = try authData(email: "external@example.com", userID: "external-user", accountID: "external-account")
@@ -174,6 +192,92 @@ struct FeatureServicesTests {
         #expect(FileManager.default.fileExists(atPath: exported.appending(path: CodexHome.snapshotFileName(for: key)).path))
     }
 
+    @Test func batchFolderImportKeepsValidRowsAndReportsEachFailure() async throws {
+        let fixture = try FeatureFixture()
+        let folder = fixture.root.appending(path: "batch", directoryHint: .isDirectory)
+        try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
+        try authData(email: "valid@example.com", userID: "user", accountID: "valid")
+            .write(to: folder.appending(path: "valid.json"))
+        try Data(#"{"broken":true}"#.utf8).write(to: folder.appending(path: "invalid.json"))
+        try Data("ignored".utf8).write(to: folder.appending(path: "notes.txt"))
+        let repository = AccountRepository(home: fixture.home)
+
+        let report = try await repository.importAccounts(ImportRequest(source: folder))
+
+        #expect(report.importedAccountKeys == [AccountKey("user::valid")])
+        #expect(report.events.count == 2)
+        #expect(report.events.contains { $0.source == "valid.json" && $0.outcome == .imported })
+        #expect(report.events.contains { $0.source == "invalid.json" && $0.outcome == .skipped })
+    }
+
+    @Test func jsonArrayImportProcessesEveryElementIndependently() async throws {
+        let fixture = try FeatureFixture()
+        let first = try JSONSerialization.jsonObject(with: authData(email: "one@example.com", userID: "user", accountID: "one"))
+        let second = try JSONSerialization.jsonObject(with: authData(email: "two@example.com", userID: "user", accountID: "two"))
+        let source = fixture.root.appending(path: "accounts.json")
+        try JSONSerialization.data(withJSONObject: [first, ["broken": true], second]).write(to: source)
+        let repository = AccountRepository(home: fixture.home)
+
+        let report = try await repository.importAccounts(ImportRequest(source: source))
+
+        #expect(Set(report.importedAccountKeys) == Set([AccountKey("user::one"), AccountKey("user::two")]))
+        #expect(report.events.filter { $0.outcome == .skipped }.count == 1)
+    }
+
+    @Test func cpaExportSkipsAPIKeyAccounts() async throws {
+        let fixture = try FeatureFixture()
+        let repository = AccountRepository(
+            home: fixture.home,
+            apiKeyIdentityResolver: StubAPIKeyResolver(identity: APIKeyIdentity(id: "api-user", email: "api@example.com"))
+        )
+        let standard = fixture.root.appending(path: "standard.json")
+        try authData(email: "chat@example.com", userID: "user", accountID: "chat").write(to: standard)
+        let apiKey = fixture.root.appending(path: "api-key.json")
+        try Data(#"{"OPENAI_API_KEY":"sk-synthetic-short"}"#.utf8).write(to: apiKey)
+        _ = try await repository.importAccounts(ImportRequest(source: standard))
+        _ = try await repository.importAccounts(ImportRequest(source: apiKey))
+        let destination = fixture.root.appending(path: "cpa", directoryHint: .isDirectory)
+
+        let report = try await repository.exportAccounts(ExportRequest(destination: destination, format: .cpa))
+
+        #expect(report.exportedCount == 1)
+        #expect(report.skippedCount == 1)
+        #expect(try FileManager.default.contentsOfDirectory(atPath: destination.path).count == 1)
+    }
+
+    @Test func repeatedImportRefreshesIdentityButPreservesUserMetadata() async throws {
+        let fixture = try FeatureFixture()
+        let key = AccountKey("user::account")
+        let existing = AccountRecord(
+            accountKey: key,
+            chatGPTAccountID: "stale-account",
+            chatGPTUserID: "stale-user",
+            email: "old@example.com",
+            alias: "keep-alias",
+            plan: .free,
+            authMode: .chatgpt,
+            createdAt: 42,
+            lastUsage: RateLimitSnapshot(primary: RateLimitWindow(usedPercent: 25)),
+            lastUsageAt: 43
+        )
+        let store = RegistryStore(home: fixture.home)
+        let loaded = try await store.load()
+        _ = try await store.commit(RegistryV4(accounts: [existing]), expected: loaded.fingerprint)
+        let source = fixture.root.appending(path: "updated.json")
+        try authData(email: "new@example.com", userID: "user", accountID: "account").write(to: source)
+        let repository = AccountRepository(home: fixture.home, store: store)
+
+        _ = try await repository.importAccounts(ImportRequest(source: source))
+        let updated = try #require(try await repository.state(refresh: .stored).registry.accounts.first)
+
+        #expect(updated.chatGPTAccountID == "account")
+        #expect(updated.chatGPTUserID == "user")
+        #expect(updated.email == "new@example.com")
+        #expect(updated.alias == "keep-alias")
+        #expect(updated.createdAt == 42)
+        #expect(updated.lastUsageAt == 43)
+    }
+
     @Test func failedImportLeavesLiveAuthByteIdentical() async throws {
         let fixture = try FeatureFixture()
         let original = try authData(email: "live@example.com", userID: "live-user", accountID: "live-account")
@@ -223,6 +327,25 @@ struct FeatureServicesTests {
         _ = try await repository.remove([active.accountKey])
 
         #expect(String(decoding: try Data(contentsOf: fixture.home.auth), as: UTF8.self) == "external-untracked-auth")
+    }
+
+    @Test func removingFinalAccountLeavesUnknownLiveAuthUntouched() async throws {
+        let fixture = try FeatureFixture()
+        let active = record("active", remaining: 5)
+        try Data(active.email.utf8).write(to: fixture.home.snapshot(for: active.accountKey))
+        let external = Data("external-untracked-auth".utf8)
+        try external.write(to: fixture.home.auth)
+        let store = RegistryStore(home: fixture.home)
+        let loaded = try await store.load()
+        _ = try await store.commit(RegistryV4(activeAccountKey: active.accountKey, accounts: [active]), expected: loaded.fingerprint)
+        let repository = AccountRepository(home: fixture.home, store: store)
+
+        let report = try await repository.remove([active.accountKey])
+        let state = try await repository.state(refresh: .stored)
+
+        #expect(report.promotedAccountKey == nil)
+        #expect(state.registry.accounts.isEmpty)
+        #expect(try Data(contentsOf: fixture.home.auth) == external)
     }
 
     @Test func usageParserMapsFiveHourWeeklyAndCredits() throws {
@@ -371,6 +494,17 @@ struct FeatureServicesTests {
         #expect(CredentialStoreConfigParser.mode(in: "# cli_auth_credentials_store = \"file\"") == .unknown)
         #expect(CredentialStoreConfigParser.mode(in: "model = \"gpt-5\"") == .unknown)
     }
+
+    @Test func secretRedactorCoversStructuredAndHeaderCredentials() {
+        let input = #"{"access_token":"opaque-access","refresh_token":"opaque-refresh","id_token":"header.payload.signature","OPENAI_API_KEY":"custom-key"} Authorization: Bearer bearer-value sk-example-secret"#
+
+        let output = SecretRedactor.redact(input)
+
+        for secret in ["opaque-access", "opaque-refresh", "header.payload.signature", "custom-key", "bearer-value", "sk-example-secret"] {
+            #expect(!output.contains(secret))
+        }
+        #expect(output.contains("<redacted>"))
+    }
 }
 
 private struct StubAPIKeyResolver: APIKeyIdentityResolving {
@@ -383,6 +517,31 @@ private struct StubUsageFetcher: UsageFetching {
     var usageResult: UsageFetchResult = .missingAuth
     func usage(for account: AccountRecord) async -> UsageFetchResult { usageResult }
     func accountNames(for scope: UserScope) async -> AccountNameFetchResult { .success(names) }
+}
+
+private actor ConcurrencyTracker {
+    private(set) var current = 0
+    private(set) var maximum = 0
+
+    func enter() {
+        current += 1
+        maximum = max(maximum, current)
+    }
+
+    func leave() { current -= 1 }
+}
+
+private struct ConcurrencyTrackingUsageFetcher: UsageFetching {
+    let tracker: ConcurrencyTracker
+
+    func usage(for account: AccountRecord) async -> UsageFetchResult {
+        await tracker.enter()
+        try? await Task.sleep(for: .milliseconds(20))
+        await tracker.leave()
+        return .missingAuth
+    }
+
+    func accountNames(for scope: UserScope) async -> AccountNameFetchResult { .unavailable }
 }
 
 private final class StubURLProtocol: URLProtocol, @unchecked Sendable {

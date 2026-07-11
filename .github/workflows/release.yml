@@ -12,7 +12,15 @@ jobs:
     runs-on: macos-15
     environment: release
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
+      - name: Validate release sequence
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          [[ "$GITHUB_REF_NAME" =~ ^v[0-9]+\.[0-9]+\.[0-9]+(-rc\.[0-9]+)?$ ]]
+          if [[ "$(gh release list --limit 1 --json tagName --jq length)" = 0 ]]; then
+            test "$GITHUB_REF_NAME" = "v0.1.0-rc.1"
+          fi
       - name: Require signing credentials
         env:
           P12: ${{ secrets.DEVELOPER_ID_APPLICATION_P12_BASE64 }}

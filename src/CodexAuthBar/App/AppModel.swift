@@ -51,7 +51,8 @@ final class AppModel {
         let preference = UserDefaults.standard.string(forKey: "codexHome").flatMap {
             $0.isEmpty ? nil : URL(fileURLWithPath: $0, isDirectory: true)
         }
-        home = CodexHome.resolve(preference: preference)
+        let isolatedTestHome = Self.isolatedTestHomeIfNeeded(preference: preference)
+        home = CodexHome.resolve(preference: preference ?? isolatedTestHome)
         Self.lifecycleLogger.notice("Codex home resolved from: \(Self.homeSource(preference: preference), privacy: .public)")
         repository = AccountRepository(home: home)
         profileStore = ProfileStore(home: home)
@@ -125,7 +126,16 @@ final class AppModel {
             do {
                 _ = try await repository.switchAccount(to: key)
             } catch {
-                if restart, wasRunning { try? await processController.launchDesktopApp(CodexLaunchRequest(codexHome: home.root)) }
+                let recovery = try? await RegistryStore(home: home).recoverPendingTransaction()
+                if restart, wasRunning {
+                    try? await processController.launchDesktopApp(CodexLaunchRequest(codexHome: home.root))
+                }
+                if recovery == .registryReconciled {
+                    statusMessage = "Recovered and completed the interrupted account switch"
+                    Self.switchLogger.notice("Switch completed through transaction recovery")
+                    await reload()
+                    return
+                }
                 throw error
             }
             if restart, wasRunning { try await processController.launchDesktopApp(CodexLaunchRequest(codexHome: home.root)) }
@@ -189,6 +199,26 @@ final class AppModel {
             : "default"
     }
 
+    private static func isolatedTestHomeIfNeeded(preference: URL?) -> URL? {
+        #if DEBUG
+        guard preference == nil,
+              ProcessInfo.processInfo.environment["XCTestConfigurationFilePath"] != nil
+        else { return nil }
+        if let override = ProcessInfo.processInfo.environment["CODEX_HOME"], !override.isEmpty {
+            var isDirectory: ObjCBool = false
+            if FileManager.default.fileExists(atPath: override, isDirectory: &isDirectory), isDirectory.boolValue {
+                return nil
+            }
+        }
+        let root = FileManager.default.temporaryDirectory
+            .appending(path: "CodexAuthBar-HostedTests-\(getpid())", directoryHint: .isDirectory)
+        try? FileManager.default.createDirectory(at: root, withIntermediateDirectories: true)
+        return root
+        #else
+        return nil
+        #endif
+    }
+
     func switchPrevious() async {
         guard let previousAccountKey else { return }
         await switchAccount(previousAccountKey)
@@ -212,13 +242,20 @@ final class AppModel {
         } else {
             var failures: [String] = []
             await withTaskGroup(of: (AccountKey, UsageFetchResult).self) { group in
-                for account in targets { group.addTask { (account.accountKey, await self.usageService.usage(for: account)) } }
-                for await (key, result) in group {
+                var iterator = targets.makeIterator()
+                for _ in 0..<min(5, targets.count) {
+                    guard let account = iterator.next() else { break }
+                    group.addTask { (account.accountKey, await self.usageService.usage(for: account)) }
+                }
+                while let (key, result) = await group.next() {
                     switch result {
                     case let .success(snapshot): try? await repository.updateUsage(snapshot, for: key)
                     case let .status(code): failures.append("HTTP \(code)")
                     case .missingAuth: failures.append("MissingAuth")
                     case let .transport(reason): failures.append(reason)
+                    }
+                    if let account = iterator.next() {
+                        group.addTask { (account.accountKey, await self.usageService.usage(for: account)) }
                     }
                 }
             }
@@ -471,7 +508,7 @@ final class AppModel {
             } else if await processController.isDesktopRunning() {
                 let content = UNMutableNotificationContent()
                 content.title = "Codex limit threshold reached"
-                content.body = "Switch to \(accounts.first(where: { $0.accountKey == decision.target })?.displayName ?? "the best available account") and restart Codex."
+                content.body = "Switch to \(visibleAccountName(for: decision.target)) and restart Codex."
                 content.categoryIdentifier = Self.autoSwitchNotificationCategory
                 content.userInfo = ["targetAccountKey": decision.target.rawValue]
                 let center = UNUserNotificationCenter.current()
@@ -480,8 +517,26 @@ final class AppModel {
                 }
             } else {
                 await switchAccount(decision.target, restart: false)
+                if activeAccountKey == decision.target {
+                    await notifyAutomaticSwitchCompleted(to: decision.target)
+                }
             }
         }
+    }
+
+    private func notifyAutomaticSwitchCompleted(to key: AccountKey) async {
+        let content = UNMutableNotificationContent()
+        content.title = "Codex account switched"
+        content.body = "Switched to \(visibleAccountName(for: key)). Restart existing CLI or VS Code sessions to use it."
+        let center = UNUserNotificationCenter.current()
+        if (try? await center.requestAuthorization(options: [.alert, .sound])) == true {
+            try? await center.add(UNNotificationRequest(identifier: "auto-switch-completed", content: content, trigger: nil))
+        }
+    }
+
+    private func visibleAccountName(for key: AccountKey) -> String {
+        let name = accounts.first(where: { $0.accountKey == key })?.displayName ?? "the best available account"
+        return name.count > 30 ? String(name.prefix(29)) + "…" : name
     }
 
     private func refreshAccountSilently(_ account: AccountRecord) async {

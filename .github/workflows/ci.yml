@@ -12,7 +12,7 @@ jobs:
   test:
     runs-on: macos-15
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: Core tests
         run: swift test --package-path src/Packages/CodexAuthCore
       - name: App tests
@@ -22,13 +22,22 @@ jobs:
           CODE_SIGNING_ALLOWED=NO
       - name: UI tests
         run: >-
-          xcodebuild test -project CodexAuthBar.xcodeproj -scheme CodexAuthBar
-          -destination 'platform=macOS' -only-testing:CodexAuthBarUITests
+          xcodebuild test -project CodexAuthBar.xcodeproj -scheme CodexAuthBarUITests
+          -destination 'platform=macOS'
           CODE_SIGN_STYLE=Manual CODE_SIGN_IDENTITY=- DEVELOPMENT_TEAM=
       - name: Analyze
         run: >-
           xcodebuild analyze -project CodexAuthBar.xcodeproj -scheme CodexAuthBar
           -destination 'platform=macOS' CODE_SIGNING_ALLOWED=NO
+      - name: Verify macOS build contract
+        run: |
+          mkdir -p build
+          xcodebuild -project CodexAuthBar.xcodeproj -scheme CodexAuthBar \
+            -configuration Release -showBuildSettings > build/release-settings.txt
+          grep -q 'ENABLE_APP_SANDBOX = NO' build/release-settings.txt
+          grep -q 'ENABLE_HARDENED_RUNTIME = YES' build/release-settings.txt
+          grep -q 'MACOSX_DEPLOYMENT_TARGET = 14.0' build/release-settings.txt
+          grep -q 'SWIFT_STRICT_CONCURRENCY = complete' build/release-settings.txt
       - name: Universal unsigned build
         run: >-
           xcodebuild build -project CodexAuthBar.xcodeproj -scheme CodexAuthBar
@@ -41,7 +50,7 @@ jobs:
           ARCHS="$(lipo -archs "$APP/Contents/MacOS/CodexAuthBar")"
           test "$ARCHS" = "x86_64 arm64" || test "$ARCHS" = "arm64 x86_64"
           ditto -c -k --keepParent "$APP" CodexAuthBar-unsigned.zip
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: CodexAuthBar-unsigned-${{ github.sha }}
           path: CodexAuthBar-unsigned.zip

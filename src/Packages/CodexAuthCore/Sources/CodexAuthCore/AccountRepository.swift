@@ -90,14 +90,21 @@ public actor AccountRepository {
 
     private func refreshUsage(for accounts: [AccountRecord]) async {
         await withTaskGroup(of: (AccountKey, UsageFetchResult).self) { group in
-            for account in accounts {
+            var iterator = accounts.makeIterator()
+            for _ in 0..<min(5, accounts.count) {
+                guard let account = iterator.next() else { break }
                 group.addTask { [usageFetcher] in
                     (account.accountKey, await usageFetcher.usage(for: account))
                 }
             }
-            for await (key, result) in group {
+            while let (key, result) = await group.next() {
                 if case let .success(snapshot) = result {
                     try? await updateUsage(snapshot, for: key)
+                }
+                if let account = iterator.next() {
+                    group.addTask { [usageFetcher] in
+                        (account.accountKey, await usageFetcher.usage(for: account))
+                    }
                 }
             }
         }

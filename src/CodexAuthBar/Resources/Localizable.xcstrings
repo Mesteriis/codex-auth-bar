@@ -1,7 +1,38 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
+    "%@%%" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@%%"
+          }
+        }
+      }
+    },
+    "%d percent remaining" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Осталось %d процентов"
+          }
+        }
+      }
+    },
+    "%d percent remaining, resets %@" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Осталось %d процентов, сброс %@"
+          }
+        }
+      }
+    },
     "%arg%%" : {
+      "extractionState" : "stale",
       "localizations" : {
         "ru" : {
           "stringUnit" : {
@@ -12,6 +43,7 @@
       }
     },
     "5h remaining" : {
+      "extractionState" : "stale",
       "localizations" : {
         "ru" : {
           "stringUnit" : {
@@ -31,26 +63,6 @@
         }
       }
     },
-    "API key" : {
-      "localizations" : {
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "API-ключ"
-          }
-        }
-      }
-    },
-    "API key…" : {
-      "localizations" : {
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "API-ключ…"
-          }
-        }
-      }
-    },
     "Access tokens are sent only to chatgpt.com. These backend endpoints are unofficial and may change." : {
       "localizations" : {
         "ru" : {
@@ -62,6 +74,7 @@
       }
     },
     "Account ID" : {
+      "extractionState" : "stale",
       "localizations" : {
         "ru" : {
           "stringUnit" : {
@@ -72,6 +85,7 @@
       }
     },
     "Account key" : {
+      "extractionState" : "stale",
       "localizations" : {
         "ru" : {
           "stringUnit" : {
@@ -92,6 +106,7 @@
       }
     },
     "Accounts" : {
+      "extractionState" : "stale",
       "localizations" : {
         "ru" : {
           "stringUnit" : {
@@ -102,6 +117,7 @@
       }
     },
     "Actions" : {
+      "extractionState" : "stale",
       "localizations" : {
         "ru" : {
           "stringUnit" : {
@@ -112,6 +128,7 @@
       }
     },
     "Active via API" : {
+      "extractionState" : "stale",
       "localizations" : {
         "ru" : {
           "stringUnit" : {
@@ -122,6 +139,7 @@
       }
     },
     "Add" : {
+      "extractionState" : "stale",
       "localizations" : {
         "ru" : {
           "stringUnit" : {
@@ -142,6 +160,7 @@
       }
     },
     "Add or import an account" : {
+      "extractionState" : "stale",
       "localizations" : {
         "ru" : {
           "stringUnit" : {
@@ -152,6 +171,7 @@
       }
     },
     "Alias" : {
+      "extractionState" : "stale",
       "localizations" : {
         "ru" : {
           "stringUnit" : {
@@ -162,6 +182,7 @@
       }
     },
     "All via API" : {
+      "extractionState" : "stale",
       "localizations" : {
         "ru" : {
           "stringUnit" : {
@@ -171,7 +192,30 @@
         }
       }
     },
+    "API key" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "API-ключ"
+          }
+        }
+      }
+    },
+    "API key…" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "API-ключ…"
+          }
+        }
+      }
+    },
     "Authentication" : {
+      "extractionState" : "stale",
       "localizations" : {
         "ru" : {
           "stringUnit" : {
@@ -182,6 +226,7 @@
       }
     },
     "Automatic switching" : {
+      "extractionState" : "stale",
       "localizations" : {
         "ru" : {
           "stringUnit" : {
@@ -202,6 +247,7 @@
       }
     },
     "Browser login" : {
+      "extractionState" : "stale",
       "localizations" : {
         "ru" : {
           "stringUnit" : {
@@ -211,17 +257,8 @@
         }
       }
     },
-    "CPA export skips API-key records. The default destination is CODEX_HOME/accounts/backup." : {
-      "localizations" : {
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "При экспорте CPA записи с API-ключами пропускаются. Папка по умолчанию: CODEX_HOME/accounts/backup."
-          }
-        }
-      }
-    },
     "Cancel" : {
+      "extractionState" : "stale",
       "localizations" : {
         "ru" : {
           "stringUnit" : {
@@ -232,6 +269,7 @@
       }
     },
     "Cancel login" : {
+      "extractionState" : "stale",
       "localizations" : {
         "ru" : {
           "stringUnit" : {
@@ -252,6 +290,7 @@
       }
     },
     "Choose executable…" : {
+      "extractionState" : "stale",
       "localizations" : {
         "ru" : {
           "stringUnit" : {
@@ -262,6 +301,7 @@
       }
     },
     "Choose…" : {
+      "extractionState" : "stale",
       "localizations" : {
         "ru" : {
           "stringUnit" : {
@@ -272,6 +312,7 @@
       }
     },
     "Clean" : {
+      "extractionState" : "stale",
       "localizations" : {
         "ru" : {
           "stringUnit" : {
@@ -282,6 +323,7 @@
       }
     },
     "Clean managed files?" : {
+      "extractionState" : "stale",
       "localizations" : {
         "ru" : {
           "stringUnit" : {
@@ -292,6 +334,7 @@
       }
     },
     "Clean stale managed files…" : {
+      "extractionState" : "stale",
       "localizations" : {
         "ru" : {
           "stringUnit" : {
@@ -302,6 +345,7 @@
       }
     },
     "Close" : {
+      "extractionState" : "stale",
       "localizations" : {
         "ru" : {
           "stringUnit" : {
@@ -312,6 +356,7 @@
       }
     },
     "Codex Auth Bar" : {
+      "extractionState" : "stale",
       "localizations" : {
         "ru" : {
           "stringUnit" : {
@@ -322,6 +367,7 @@
       }
     },
     "Codex CLI" : {
+      "extractionState" : "stale",
       "localizations" : {
         "ru" : {
           "stringUnit" : {
@@ -332,6 +378,7 @@
       }
     },
     "Codex CLI path" : {
+      "extractionState" : "stale",
       "localizations" : {
         "ru" : {
           "stringUnit" : {
@@ -341,7 +388,7 @@
         }
       }
     },
-    "Codex Diagnostics" : {
+    "Codex diagnostics" : {
       "localizations" : {
         "ru" : {
           "stringUnit" : {
@@ -351,7 +398,8 @@
         }
       }
     },
-    "Codex diagnostics" : {
+    "Codex Diagnostics" : {
+      "extractionState" : "stale",
       "localizations" : {
         "ru" : {
           "stringUnit" : {
@@ -372,6 +420,7 @@
       }
     },
     "Copy" : {
+      "extractionState" : "stale",
       "localizations" : {
         "ru" : {
           "stringUnit" : {
@@ -382,6 +431,7 @@
       }
     },
     "Copy command" : {
+      "extractionState" : "stale",
       "localizations" : {
         "ru" : {
           "stringUnit" : {
@@ -392,6 +442,7 @@
       }
     },
     "Copy file credential setting" : {
+      "extractionState" : "stale",
       "localizations" : {
         "ru" : {
           "stringUnit" : {
@@ -402,6 +453,7 @@
       }
     },
     "Copy setting" : {
+      "extractionState" : "stale",
       "localizations" : {
         "ru" : {
           "stringUnit" : {
@@ -411,7 +463,18 @@
         }
       }
     },
+    "CPA export skips API-key records. The default destination is CODEX_HOME/accounts/backup." : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "При экспорте CPA записи с API-ключами пропускаются. Папка по умолчанию: CODEX_HOME/accounts/backup."
+          }
+        }
+      }
+    },
     "Create" : {
+      "extractionState" : "stale",
       "localizations" : {
         "ru" : {
           "stringUnit" : {
@@ -422,6 +485,7 @@
       }
     },
     "Credits" : {
+      "extractionState" : "stale",
       "localizations" : {
         "ru" : {
           "stringUnit" : {
@@ -432,6 +496,7 @@
       }
     },
     "Current Codex home" : {
+      "extractionState" : "stale",
       "localizations" : {
         "ru" : {
           "stringUnit" : {
@@ -442,6 +507,7 @@
       }
     },
     "Custom CODEX_HOME" : {
+      "extractionState" : "stale",
       "localizations" : {
         "ru" : {
           "stringUnit" : {
@@ -452,6 +518,7 @@
       }
     },
     "Custom executable" : {
+      "extractionState" : "stale",
       "localizations" : {
         "ru" : {
           "stringUnit" : {
@@ -472,6 +539,7 @@
       }
     },
     "Delete" : {
+      "extractionState" : "stale",
       "localizations" : {
         "ru" : {
           "stringUnit" : {
@@ -482,6 +550,7 @@
       }
     },
     "Delete profile?" : {
+      "extractionState" : "stale",
       "localizations" : {
         "ru" : {
           "stringUnit" : {
@@ -492,6 +561,7 @@
       }
     },
     "Device code, import, or API key…" : {
+      "extractionState" : "stale",
       "localizations" : {
         "ru" : {
           "stringUnit" : {
@@ -502,6 +572,7 @@
       }
     },
     "Device-code login" : {
+      "extractionState" : "stale",
       "localizations" : {
         "ru" : {
           "stringUnit" : {
@@ -512,6 +583,7 @@
       }
     },
     "Display" : {
+      "extractionState" : "stale",
       "localizations" : {
         "ru" : {
           "stringUnit" : {
@@ -522,6 +594,7 @@
       }
     },
     "Email" : {
+      "extractionState" : "stale",
       "localizations" : {
         "ru" : {
           "stringUnit" : {
@@ -532,6 +605,7 @@
       }
     },
     "Enable auto-switch monitoring" : {
+      "extractionState" : "stale",
       "localizations" : {
         "ru" : {
           "stringUnit" : {
@@ -542,6 +616,7 @@
       }
     },
     "Experimental" : {
+      "extractionState" : "stale",
       "localizations" : {
         "ru" : {
           "stringUnit" : {
@@ -552,6 +627,7 @@
       }
     },
     "Export" : {
+      "extractionState" : "stale",
       "localizations" : {
         "ru" : {
           "stringUnit" : {
@@ -562,6 +638,7 @@
       }
     },
     "Export CPA…" : {
+      "extractionState" : "stale",
       "localizations" : {
         "ru" : {
           "stringUnit" : {
@@ -572,6 +649,7 @@
       }
     },
     "Export standard…" : {
+      "extractionState" : "stale",
       "localizations" : {
         "ru" : {
           "stringUnit" : {
@@ -592,6 +670,7 @@
       }
     },
     "General" : {
+      "extractionState" : "stale",
       "localizations" : {
         "ru" : {
           "stringUnit" : {
@@ -602,6 +681,7 @@
       }
     },
     "Identity" : {
+      "extractionState" : "stale",
       "localizations" : {
         "ru" : {
           "stringUnit" : {
@@ -612,6 +692,7 @@
       }
     },
     "Import" : {
+      "extractionState" : "stale",
       "localizations" : {
         "ru" : {
           "stringUnit" : {
@@ -622,6 +703,7 @@
       }
     },
     "Import auth file, JSON array, or folder…" : {
+      "extractionState" : "stale",
       "localizations" : {
         "ru" : {
           "stringUnit" : {
@@ -632,6 +714,7 @@
       }
     },
     "Import/Export" : {
+      "extractionState" : "stale",
       "localizations" : {
         "ru" : {
           "stringUnit" : {
@@ -642,6 +725,7 @@
       }
     },
     "Install pinned codext and launch Codex" : {
+      "extractionState" : "stale",
       "localizations" : {
         "ru" : {
           "stringUnit" : {
@@ -652,6 +736,7 @@
       }
     },
     "Install verified codext and launch Codex" : {
+      "extractionState" : "stale",
       "localizations" : {
         "ru" : {
           "stringUnit" : {
@@ -662,6 +747,7 @@
       }
     },
     "Interrupted switch" : {
+      "extractionState" : "stale",
       "localizations" : {
         "ru" : {
           "stringUnit" : {
@@ -682,6 +768,7 @@
       }
     },
     "Last report" : {
+      "extractionState" : "stale",
       "localizations" : {
         "ru" : {
           "stringUnit" : {
@@ -692,6 +779,7 @@
       }
     },
     "Launch" : {
+      "extractionState" : "stale",
       "localizations" : {
         "ru" : {
           "stringUnit" : {
@@ -701,17 +789,8 @@
         }
       }
     },
-    "Launch CLI" : {
-      "localizations" : {
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Запустить CLI"
-          }
-        }
-      }
-    },
     "Launch at login" : {
+      "extractionState" : "stale",
       "localizations" : {
         "ru" : {
           "stringUnit" : {
@@ -721,7 +800,19 @@
         }
       }
     },
+    "Launch CLI" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Запустить CLI"
+          }
+        }
+      }
+    },
     "Launch with diagnostics…" : {
+      "extractionState" : "stale",
       "localizations" : {
         "ru" : {
           "stringUnit" : {
@@ -732,6 +823,7 @@
       }
     },
     "Legacy maintenance" : {
+      "extractionState" : "stale",
       "localizations" : {
         "ru" : {
           "stringUnit" : {
@@ -742,6 +834,7 @@
       }
     },
     "Local only" : {
+      "extractionState" : "stale",
       "localizations" : {
         "ru" : {
           "stringUnit" : {
@@ -752,6 +845,7 @@
       }
     },
     "Manage…" : {
+      "extractionState" : "stale",
       "localizations" : {
         "ru" : {
           "stringUnit" : {
@@ -762,6 +856,7 @@
       }
     },
     "Name" : {
+      "extractionState" : "stale",
       "localizations" : {
         "ru" : {
           "stringUnit" : {
@@ -772,6 +867,7 @@
       }
     },
     "No active account" : {
+      "extractionState" : "stale",
       "localizations" : {
         "ru" : {
           "stringUnit" : {
@@ -792,6 +888,7 @@
       }
     },
     "Open" : {
+      "extractionState" : "stale",
       "localizations" : {
         "ru" : {
           "stringUnit" : {
@@ -802,6 +899,7 @@
       }
     },
     "Open in default editor" : {
+      "extractionState" : "stale",
       "localizations" : {
         "ru" : {
           "stringUnit" : {
@@ -812,6 +910,7 @@
       }
     },
     "Path to codext" : {
+      "extractionState" : "stale",
       "localizations" : {
         "ru" : {
           "stringUnit" : {
@@ -842,6 +941,7 @@
       }
     },
     "Plan" : {
+      "extractionState" : "stale",
       "localizations" : {
         "ru" : {
           "stringUnit" : {
@@ -852,6 +952,7 @@
       }
     },
     "Previous" : {
+      "extractionState" : "stale",
       "localizations" : {
         "ru" : {
           "stringUnit" : {
@@ -862,6 +963,7 @@
       }
     },
     "Profile" : {
+      "extractionState" : "stale",
       "localizations" : {
         "ru" : {
           "stringUnit" : {
@@ -872,6 +974,7 @@
       }
     },
     "Profiles" : {
+      "extractionState" : "stale",
       "localizations" : {
         "ru" : {
           "stringUnit" : {
@@ -892,6 +995,7 @@
       }
     },
     "Quit" : {
+      "extractionState" : "stale",
       "localizations" : {
         "ru" : {
           "stringUnit" : {
@@ -902,6 +1006,7 @@
       }
     },
     "Rebuild" : {
+      "extractionState" : "stale",
       "localizations" : {
         "ru" : {
           "stringUnit" : {
@@ -912,6 +1017,7 @@
       }
     },
     "Rebuild account registry?" : {
+      "extractionState" : "stale",
       "localizations" : {
         "ru" : {
           "stringUnit" : {
@@ -922,6 +1028,7 @@
       }
     },
     "Rebuild registry from snapshots…" : {
+      "extractionState" : "stale",
       "localizations" : {
         "ru" : {
           "stringUnit" : {
@@ -932,6 +1039,7 @@
       }
     },
     "Recovery" : {
+      "extractionState" : "stale",
       "localizations" : {
         "ru" : {
           "stringUnit" : {
@@ -942,6 +1050,7 @@
       }
     },
     "Refresh" : {
+      "extractionState" : "stale",
       "localizations" : {
         "ru" : {
           "stringUnit" : {
@@ -952,6 +1061,7 @@
       }
     },
     "Refresh every %arg seconds" : {
+      "extractionState" : "stale",
       "localizations" : {
         "ru" : {
           "stringUnit" : {
@@ -972,6 +1082,7 @@
       }
     },
     "Registry recovery" : {
+      "extractionState" : "stale",
       "localizations" : {
         "ru" : {
           "stringUnit" : {
@@ -982,6 +1093,7 @@
       }
     },
     "Remove" : {
+      "extractionState" : "stale",
       "localizations" : {
         "ru" : {
           "stringUnit" : {
@@ -991,17 +1103,8 @@
         }
       }
     },
-    "Remove Loongphy auto-switch LaunchAgent…" : {
-      "localizations" : {
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Удалить LaunchAgent автопереключения Loongphy…"
-          }
-        }
-      }
-    },
     "Remove account?" : {
+      "extractionState" : "stale",
       "localizations" : {
         "ru" : {
           "stringUnit" : {
@@ -1012,6 +1115,7 @@
       }
     },
     "Remove legacy LaunchAgent?" : {
+      "extractionState" : "stale",
       "localizations" : {
         "ru" : {
           "stringUnit" : {
@@ -1021,7 +1125,19 @@
         }
       }
     },
+    "Remove Loongphy auto-switch LaunchAgent…" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Удалить LaunchAgent автопереключения Loongphy…"
+          }
+        }
+      }
+    },
     "Rename" : {
+      "extractionState" : "stale",
       "localizations" : {
         "ru" : {
           "stringUnit" : {
@@ -1032,6 +1148,7 @@
       }
     },
     "Reset credits" : {
+      "extractionState" : "stale",
       "localizations" : {
         "ru" : {
           "stringUnit" : {
@@ -1041,17 +1158,8 @@
         }
       }
     },
-    "Reveal in Finder" : {
-      "localizations" : {
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Показать в Finder"
-          }
-        }
-      }
-    },
     "Reveal config.toml" : {
+      "extractionState" : "stale",
       "localizations" : {
         "ru" : {
           "stringUnit" : {
@@ -1061,7 +1169,19 @@
         }
       }
     },
+    "Reveal in Finder" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Показать в Finder"
+          }
+        }
+      }
+    },
     "Run transaction recovery" : {
+      "extractionState" : "stale",
       "localizations" : {
         "ru" : {
           "stringUnit" : {
@@ -1072,6 +1192,7 @@
       }
     },
     "Save alias" : {
+      "extractionState" : "stale",
       "localizations" : {
         "ru" : {
           "stringUnit" : {
@@ -1082,6 +1203,7 @@
       }
     },
     "Search accounts" : {
+      "extractionState" : "stale",
       "localizations" : {
         "ru" : {
           "stringUnit" : {
@@ -1092,6 +1214,7 @@
       }
     },
     "Security and API disclosure" : {
+      "extractionState" : "stale",
       "localizations" : {
         "ru" : {
           "stringUnit" : {
@@ -1102,6 +1225,7 @@
       }
     },
     "Select an account" : {
+      "extractionState" : "stale",
       "localizations" : {
         "ru" : {
           "stringUnit" : {
@@ -1112,6 +1236,7 @@
       }
     },
     "Settings…" : {
+      "extractionState" : "stale",
       "localizations" : {
         "ru" : {
           "stringUnit" : {
@@ -1132,6 +1257,7 @@
       }
     },
     "Switch & Restart" : {
+      "extractionState" : "stale",
       "localizations" : {
         "ru" : {
           "stringUnit" : {
@@ -1141,7 +1267,18 @@
         }
       }
     },
+    "Switch to %@" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Переключиться на %@"
+          }
+        }
+      }
+    },
     "Switch only" : {
+      "extractionState" : "stale",
       "localizations" : {
         "ru" : {
           "stringUnit" : {
@@ -1152,6 +1289,7 @@
       }
     },
     "Switch to %arg" : {
+      "extractionState" : "stale",
       "localizations" : {
         "ru" : {
           "stringUnit" : {
@@ -1212,6 +1350,7 @@
       }
     },
     "Unknown" : {
+      "extractionState" : "stale",
       "localizations" : {
         "ru" : {
           "stringUnit" : {
@@ -1232,6 +1371,7 @@
       }
     },
     "Usage" : {
+      "extractionState" : "stale",
       "localizations" : {
         "ru" : {
           "stringUnit" : {
@@ -1242,6 +1382,7 @@
       }
     },
     "Usage API" : {
+      "extractionState" : "stale",
       "localizations" : {
         "ru" : {
           "stringUnit" : {
@@ -1251,7 +1392,18 @@
         }
       }
     },
+    "Usage unavailable" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Данные об использовании недоступны"
+          }
+        }
+      }
+    },
     "Use default" : {
+      "extractionState" : "stale",
       "localizations" : {
         "ru" : {
           "stringUnit" : {
@@ -1262,6 +1414,7 @@
       }
     },
     "Use remote usage and workspace APIs" : {
+      "extractionState" : "stale",
       "localizations" : {
         "ru" : {
           "stringUnit" : {
@@ -1272,6 +1425,7 @@
       }
     },
     "User ID" : {
+      "extractionState" : "stale",
       "localizations" : {
         "ru" : {
           "stringUnit" : {
@@ -1282,6 +1436,7 @@
       }
     },
     "Verified codext" : {
+      "extractionState" : "stale",
       "localizations" : {
         "ru" : {
           "stringUnit" : {
@@ -1292,6 +1447,7 @@
       }
     },
     "Weekly" : {
+      "extractionState" : "stale",
       "localizations" : {
         "ru" : {
           "stringUnit" : {
@@ -1302,6 +1458,7 @@
       }
     },
     "Weekly remaining" : {
+      "extractionState" : "stale",
       "localizations" : {
         "ru" : {
           "stringUnit" : {
@@ -1322,6 +1479,7 @@
       }
     },
     "Workspace" : {
+      "extractionState" : "stale",
       "localizations" : {
         "ru" : {
           "stringUnit" : {

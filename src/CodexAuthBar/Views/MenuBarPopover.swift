@@ -154,12 +154,16 @@ private struct UsageGauge: View {
     }
 
     private var accessibilityValue: String {
-        guard let window else { return "Usage unavailable" }
+        guard let window else { return String(localized: "Usage unavailable") }
         let remaining = Int(window.remainingPercent())
         if let resetsAt = window.resetsAt {
-            return "\(remaining) percent remaining, resets \(Date(timeIntervalSince1970: TimeInterval(resetsAt)).formatted())"
+            return String(
+                format: String(localized: "%d percent remaining, resets %@"),
+                remaining,
+                Date(timeIntervalSince1970: TimeInterval(resetsAt)).formatted()
+            )
         }
-        return "\(remaining) percent remaining"
+        return String(format: String(localized: "%d percent remaining"), remaining)
     }
 }
 
