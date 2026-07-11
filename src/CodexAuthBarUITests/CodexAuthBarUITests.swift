@@ -8,6 +8,7 @@ final class CodexAuthBarUITests: XCTestCase {
         try? FileManager.default.createDirectory(at: temporary, withIntermediateDirectories: true)
         defer { try? FileManager.default.removeItem(at: temporary) }
         app.launchEnvironment["CODEX_HOME"] = temporary.path
+        app.launchArguments += ["-AppleLanguages", "(en)", "-AppleLocale", "en_US"]
         app.launch()
         XCTAssertEqual(app.state, .runningBackground)
     }
@@ -19,6 +20,7 @@ final class CodexAuthBarUITests: XCTestCase {
         defer { try? FileManager.default.removeItem(at: temporary) }
         try seedRegistry(at: temporary)
         app.launchEnvironment["CODEX_HOME"] = temporary.path
+        app.launchArguments += ["-AppleLanguages", "(en)", "-AppleLocale", "en_US"]
         app.launch()
 
         let appStatusItem = app.menuBars.statusItems["Codex Auth Bar"]
