@@ -59,15 +59,26 @@ final class AppModel {
         profileStore = ProfileStore(home: home)
         usageService = ChatGPTUsageService(home: home)
         processController = CodexProcessController(home: home)
+        let localWidgetStore = WidgetSnapshotStore(
+            containerURL: CodexWidgetContract.hostApplicationSupportContainerURL(
+                homeDirectory: FileManager.default.homeDirectoryForCurrentUser
+            )
+        )
         if let containerURL = FileManager.default.containerURL(
             forSecurityApplicationGroupIdentifier: CodexWidgetContract.appGroup
         ) {
             widgetPublisher = WidgetSnapshotPublisher(
-                store: WidgetSnapshotStore(containerURL: containerURL),
+                store: ReplicatingWidgetSnapshotWriter(
+                    primary: WidgetSnapshotStore(containerURL: containerURL),
+                    mirrors: [localWidgetStore]
+                ),
                 fallbackName: { "Account \($0)" }
             )
         } else {
-            widgetPublisher = nil
+            widgetPublisher = WidgetSnapshotPublisher(
+                store: localWidgetStore,
+                fallbackName: { "Account \($0)" }
+            )
             Self.lifecycleLogger.notice("widget_container_unavailable")
         }
         if let raw = UserDefaults.standard.string(forKey: "selectedProfile") { selectedProfile = ProfileName(raw) }

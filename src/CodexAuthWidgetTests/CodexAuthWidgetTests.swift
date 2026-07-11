@@ -5,6 +5,25 @@ import WidgetKit
 import XCTest
 
 final class CodexAuthWidgetTests: XCTestCase {
+    func testSnapshotLoaderFallsBackWhenPrimaryStoreIsUnreadable() throws {
+        let root = FileManager.default.temporaryDirectory
+            .appending(path: UUID().uuidString, directoryHint: .isDirectory)
+        defer { try? FileManager.default.removeItem(at: root) }
+        let primary = WidgetSnapshotStore(containerURL: root.appending(path: "primary"))
+        let fallback = WidgetSnapshotStore(containerURL: root.appending(path: "fallback"))
+        let snapshot = WidgetSnapshot(generatedAtMilliseconds: 1_000, accounts: [])
+        try fallback.write(snapshot)
+
+        let result = WidgetSnapshotLoader(stores: [primary, fallback]).load(
+            now: Date(timeIntervalSince1970: 2)
+        )
+
+        guard case .loaded(let loaded) = result else {
+            return XCTFail("Expected fallback snapshot to load")
+        }
+        XCTAssertEqual(loaded, snapshot)
+    }
+
     func testTimelineRefreshesInThirtyMinutesAndIncludesSpacedResets() throws {
         let now = Date(timeIntervalSince1970: 1_000)
         let snapshot = widgetSnapshot(

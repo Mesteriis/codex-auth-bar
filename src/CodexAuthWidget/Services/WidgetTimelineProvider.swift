@@ -1,4 +1,5 @@
 import CodexAuthCore
+import Darwin
 import Foundation
 import WidgetKit
 
@@ -35,27 +36,62 @@ struct CodexWidgetProvider: TimelineProvider {
     }
 
     private func loadSnapshot(now: Date) -> SnapshotLoadResult {
-        guard let containerURL = FileManager.default.containerURL(
+        var stores: [WidgetSnapshotStore] = []
+        if let containerURL = FileManager.default.containerURL(
             forSecurityApplicationGroupIdentifier: CodexWidgetContract.appGroup
-        ) else {
-            return .missing
+        ) {
+            stores.append(WidgetSnapshotStore(containerURL: containerURL))
+        }
+        if let homeDirectory = HostUserDirectory.current {
+            stores.append(
+                WidgetSnapshotStore(
+                    containerURL: CodexWidgetContract.hostApplicationSupportContainerURL(
+                        homeDirectory: homeDirectory
+                    )
+                )
+            )
         }
 
-        do {
-            let snapshot = try WidgetSnapshotStore(containerURL: containerURL).load()
-            let generatedAt = Date(
-                timeIntervalSince1970: TimeInterval(snapshot.generatedAtMilliseconds) / 1_000
-            )
-            return generatedAt > now ? .invalid : .loaded(snapshot)
-        } catch WidgetSnapshotStoreError.missing {
-            return .missing
-        } catch {
-            return .invalid
-        }
+        return WidgetSnapshotLoader(stores: stores).load(now: now)
     }
 }
 
-private enum SnapshotLoadResult {
+private enum HostUserDirectory {
+    static var current: URL? {
+        guard let record = getpwuid(getuid()), let path = record.pointee.pw_dir else { return nil }
+        return URL(fileURLWithPath: String(cString: path), isDirectory: true)
+    }
+}
+
+struct WidgetSnapshotLoader {
+    let stores: [WidgetSnapshotStore]
+
+    func load(now: Date) -> SnapshotLoadResult {
+        var foundInvalidStore = false
+
+        for store in stores {
+            do {
+                let snapshot = try store.load()
+                let generatedAt = Date(
+                    timeIntervalSince1970: TimeInterval(snapshot.generatedAtMilliseconds) / 1_000
+                )
+                if generatedAt > now {
+                    foundInvalidStore = true
+                    continue
+                }
+                return .loaded(snapshot)
+            } catch WidgetSnapshotStoreError.missing {
+                continue
+            } catch {
+                foundInvalidStore = true
+            }
+        }
+
+        return foundInvalidStore ? .invalid : .missing
+    }
+}
+
+enum SnapshotLoadResult {
     case loaded(WidgetSnapshot)
     case missing
     case invalid

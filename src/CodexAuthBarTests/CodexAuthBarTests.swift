@@ -3,6 +3,49 @@ import XCTest
 @testable import CodexAuthBar
 
 final class CodexAuthBarTests: XCTestCase {
+    func testWidgetSnapshotWriterReplicatesToLocalMirror() async throws {
+        let primary = RecordingWidgetStore()
+        let mirror = RecordingWidgetStore()
+        let writer = ReplicatingWidgetSnapshotWriter(primary: primary, mirrors: [mirror])
+
+        try await writer.writeSnapshot(
+            WidgetSnapshot(generatedAtMilliseconds: 1, accounts: [])
+        )
+
+        let primaryWrites = await primary.writeCount
+        let mirrorWrites = await mirror.writeCount
+        XCTAssertEqual(primaryWrites, 1)
+        XCTAssertEqual(mirrorWrites, 1)
+    }
+
+    func testMenuAccountListShowsOnlyInactiveAccountsAtVisibleHeight() {
+        let active = AccountRecord(
+            accountKey: AccountKey("user::active"),
+            chatGPTAccountID: "active",
+            chatGPTUserID: "user",
+            email: "active@example.com",
+            alias: "Active",
+            authMode: .chatgpt
+        )
+        let inactive = AccountRecord(
+            accountKey: AccountKey("user::inactive"),
+            chatGPTAccountID: "inactive",
+            chatGPTUserID: "user",
+            email: "inactive@example.com",
+            alias: "Inactive",
+            authMode: .chatgpt
+        )
+
+        let rows = MenuAccountLayout.inactiveAccounts(
+            from: [active, inactive],
+            activeKey: active.accountKey
+        )
+
+        XCTAssertEqual(rows.map(\.accountKey), [inactive.accountKey])
+        XCTAssertGreaterThan(MenuAccountLayout.listHeight(accountCount: rows.count), 0)
+        XCTAssertEqual(MenuAccountLayout.listHeight(accountCount: 0), 0)
+    }
+
     func testAutomaticWidgetReloadsAreCoalescedForFifteenMinutes() async throws {
         let store = RecordingWidgetStore()
         let reloader = RecordingWidgetReloader()

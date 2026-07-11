@@ -156,15 +156,23 @@ if forbidden key names or credential-like values appear anywhere in it.
 require entitlements. Production resolves the container with
 `FileManager.containerURL(forSecurityApplicationGroupIdentifier:)`.
 
+Developer ID builds use the App Group as the primary and expected transport.
+For explicitly unsigned local packages, the host also writes the same
+credential-free snapshot under its Application Support directory. The local
+ad-hoc signing step gives the sandboxed widget a read-only temporary exception
+for that single `widget/` directory because App Groups are unavailable without
+an Apple provisioning profile. This exception is not part of release signing.
+
 Writing uses a private `widget/` directory, a temporary file in the same
 directory, `fsync`, atomic rename, and directory `fsync`. Readers either see the
 complete previous snapshot or the complete new snapshot. Invalid, missing, or
 future-schema files are not partially rendered.
 
 The host app remains unsandboxed as documented in ADR 0001. The widget
-extension enables App Sandbox and receives only the App Groups entitlement.
-Both targets use the same App Group identifier. No additional file, network,
-automation, or keychain entitlement is added to the extension.
+extension enables App Sandbox and receives the App Groups entitlement. Both
+targets use the same App Group identifier. Release builds add no file, network,
+automation, or keychain entitlement to the extension; only an explicitly local
+unsigned package uses the narrow read-only fallback described above.
 
 ## Publishing and refresh policy
 

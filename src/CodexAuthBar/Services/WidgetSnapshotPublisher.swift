@@ -26,6 +26,18 @@ extension WidgetSnapshotStore: WidgetSnapshotWriting {
     func writeSnapshot(_ snapshot: WidgetSnapshot) async throws { try write(snapshot) }
 }
 
+struct ReplicatingWidgetSnapshotWriter: WidgetSnapshotWriting {
+    let primary: any WidgetSnapshotWriting
+    let mirrors: [any WidgetSnapshotWriting]
+
+    func writeSnapshot(_ snapshot: WidgetSnapshot) async throws {
+        try await primary.writeSnapshot(snapshot)
+        for mirror in mirrors {
+            try? await mirror.writeSnapshot(snapshot)
+        }
+    }
+}
+
 actor WidgetSnapshotPublisher {
     private struct PendingReload {
         let forcesReload: Bool

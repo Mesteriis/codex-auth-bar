@@ -3,6 +3,15 @@ import Testing
 @testable import CodexAuthCore
 
 @Suite struct WidgetSnapshotTests {
+    @Test func localUnsignedSnapshotUsesHostApplicationSupport() {
+        let home = URL(fileURLWithPath: "/Users/example", isDirectory: true)
+
+        #expect(
+            CodexWidgetContract.hostApplicationSupportContainerURL(homeDirectory: home).path
+                == "/Users/example/Library/Application Support/CodexAuthBar"
+        )
+    }
+
     @Test func projectionContainsOnlySafeFieldsAndOrdersByAttention() throws {
         let active = widgetAccount(
             key: "user-active::account-active",

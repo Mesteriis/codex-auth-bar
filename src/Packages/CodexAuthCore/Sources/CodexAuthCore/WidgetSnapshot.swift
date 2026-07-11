@@ -174,4 +174,10 @@ public enum WidgetSnapshotProjector {
 public enum CodexWidgetContract {
     public static let kind = "com.mesteriis.CodexAuthBar.accounts"
     public static let appGroup = "group.com.mesteriis.CodexAuthBar"
+
+    public static func hostApplicationSupportContainerURL(homeDirectory: URL) -> URL {
+        homeDirectory
+            .appending(path: "Library/Application Support")
+            .appending(path: "CodexAuthBar", directoryHint: .isDirectory)
+    }
 }

@@ -7,6 +7,10 @@ struct MenuBarPopover: View {
     @Environment(\.openSettings) private var openSettings
 
     var body: some View {
+        let inactiveAccounts = MenuAccountLayout.inactiveAccounts(
+            from: model.filteredAccounts,
+            activeKey: model.activeAccountKey
+        )
         VStack(alignment: .leading, spacing: 12) {
             header
             usage
@@ -14,16 +18,18 @@ struct MenuBarPopover: View {
                 .textFieldStyle(.roundedBorder)
                 .accessibilityIdentifier("CodexAuthBar.search")
 
-            ScrollView {
-                LazyVStack(spacing: 4) {
-                    ForEach(model.filteredAccounts) { account in
-                        AccountRow(account: account, active: account.accountKey == model.activeAccountKey) {
-                            Task { await model.switchAccount(account.accountKey) }
+            if !inactiveAccounts.isEmpty {
+                ScrollView {
+                    LazyVStack(spacing: 4) {
+                        ForEach(inactiveAccounts) { account in
+                            AccountRow(account: account, active: false) {
+                                Task { await model.switchAccount(account.accountKey) }
+                            }
                         }
                     }
                 }
+                .frame(height: MenuAccountLayout.listHeight(accountCount: inactiveAccounts.count))
             }
-            .frame(maxHeight: 240)
 
             profileControls
             Divider()
@@ -109,6 +115,23 @@ struct MenuBarPopover: View {
     }
 
     private func activate() { NSApp.activate(ignoringOtherApps: true) }
+}
+
+enum MenuAccountLayout {
+    private static let rowHeight: CGFloat = 52
+    private static let maximumListHeight: CGFloat = 208
+
+    static func inactiveAccounts(
+        from accounts: [AccountRecord],
+        activeKey: AccountKey?
+    ) -> [AccountRecord] {
+        accounts.filter { $0.accountKey != activeKey }
+    }
+
+    static func listHeight(accountCount: Int) -> CGFloat {
+        guard accountCount > 0 else { return 0 }
+        return min(CGFloat(accountCount) * rowHeight, maximumListHeight)
+    }
 }
 
 private struct AccountRow: View {
