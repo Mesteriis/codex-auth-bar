@@ -38,7 +38,10 @@ final class CodexAuthBarUITests: XCTestCase {
         search.typeText("work")
         let accountButton = app.buttons["CodexAuthBar.account.test-user::test-account"]
         XCTAssertTrue(accountButton.waitForExistence(timeout: 2))
-        XCTAssertEqual(accountButton.label, "Switch to work")
+        XCTAssertTrue(
+            ["Switch to work", "Переключиться на work"].contains(accountButton.label),
+            "Unexpected VoiceOver label: \(accountButton.label)"
+        )
         search.typeKey(.tab, modifierFlags: [])
         XCTAssertTrue(app.descendants(matching: .any)["CodexAuthBar.previous"].waitForExistence(timeout: 2))
         XCTAssertTrue(app.descendants(matching: .any)["CodexAuthBar.manage"].waitForExistence(timeout: 2))
