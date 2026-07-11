@@ -61,6 +61,103 @@ final class CodexAuthBarTests: XCTestCase {
         XCTAssertEqual(reloadCount, 2)
     }
 
+    func testConcurrentAutomaticPublishesReserveOneReloadWindow() async throws {
+        let store = CoordinatedWidgetStore()
+        let reloader = BlockingWidgetReloader()
+        let publisher = WidgetSnapshotPublisher(
+            store: store,
+            reloader: reloader,
+            fallbackName: { "Account \($0)" }
+        )
+
+        let first = Task {
+            try await publisher.publish(
+                registry: syntheticWidgetRegistry(alias: "First"),
+                reason: .automatic,
+                now: Date(timeIntervalSince1970: 0)
+            )
+        }
+        await reloader.waitForFirstReload()
+
+        let second = Task {
+            try await publisher.publish(
+                registry: syntheticWidgetRegistry(alias: "Second"),
+                reason: .automatic,
+                now: Date(timeIntervalSince1970: 1)
+            )
+        }
+        await store.waitForWriteCount(2)
+        await Task.yield()
+
+        let reloadCountWhileBlocked = await reloader.reloadCount
+        XCTAssertEqual(reloadCountWhileBlocked, 1)
+        await reloader.releaseFirstReload()
+        try await first.value
+        try await second.value
+    }
+
+    func testAutomaticPublishRetriesAfterReloadFailureWithoutRewritingSnapshot() async throws {
+        let store = RecordingWidgetStore()
+        let reloader = FailingOnceWidgetReloader()
+        let publisher = WidgetSnapshotPublisher(
+            store: store,
+            reloader: reloader,
+            fallbackName: { "Account \($0)" }
+        )
+        let registry = syntheticWidgetRegistry(alias: "Personal")
+
+        do {
+            try await publisher.publish(
+                registry: registry,
+                reason: .automatic,
+                now: Date(timeIntervalSince1970: 0)
+            )
+            XCTFail("Expected the injected reload to fail")
+        } catch PublisherTestError.injectedFailure {}
+
+        try await publisher.publish(
+            registry: registry,
+            reason: .automatic,
+            now: Date(timeIntervalSince1970: 1)
+        )
+
+        let writeCount = await store.writeCount
+        let reloadCount = await reloader.reloadCount
+        XCTAssertEqual(writeCount, 1)
+        XCTAssertEqual(reloadCount, 2)
+    }
+
+    func testAutomaticPublishRetriesAfterWriteFailure() async throws {
+        let store = FailingOnceWidgetStore()
+        let reloader = RecordingWidgetReloader()
+        let publisher = WidgetSnapshotPublisher(
+            store: store,
+            reloader: reloader,
+            fallbackName: { "Account \($0)" }
+        )
+        let registry = syntheticWidgetRegistry(alias: "Personal")
+
+        do {
+            try await publisher.publish(
+                registry: registry,
+                reason: .automatic,
+                now: Date(timeIntervalSince1970: 0)
+            )
+            XCTFail("Expected the injected write to fail")
+        } catch PublisherTestError.injectedFailure {}
+
+        try await publisher.publish(
+            registry: registry,
+            reason: .automatic,
+            now: Date(timeIntervalSince1970: 1)
+        )
+
+        let writeCount = await store.writeCount
+        let reloadCount = await reloader.reloadCount
+        XCTAssertEqual(writeCount, 2)
+        XCTAssertEqual(reloadCount, 1)
+    }
+
     func testWidgetDeepLinkAcceptsOnlyAccountsRoute() {
         XCTAssertEqual(WidgetDeepLink(URL(string: "codexauthbar://accounts")!), .accounts)
         XCTAssertNil(WidgetDeepLink(URL(string: "https://example.com")!))
@@ -177,8 +274,73 @@ private actor RecordingWidgetStore: WidgetSnapshotWriting {
 private actor RecordingWidgetReloader: WidgetTimelineReloading {
     private(set) var reloadCount = 0
 
-    func reload() async {
+    func reload() async throws {
         reloadCount += 1
+    }
+}
+
+private enum PublisherTestError: Error {
+    case injectedFailure
+}
+
+private actor CoordinatedWidgetStore: WidgetSnapshotWriting {
+    private(set) var writeCount = 0
+    private var waiters: [Int: [CheckedContinuation<Void, Never>]] = [:]
+
+    func writeSnapshot(_ snapshot: WidgetSnapshot) async throws {
+        writeCount += 1
+        let ready = waiters.removeValue(forKey: writeCount) ?? []
+        ready.forEach { $0.resume() }
+    }
+
+    func waitForWriteCount(_ target: Int) async {
+        guard writeCount < target else { return }
+        await withCheckedContinuation { continuation in
+            waiters[target, default: []].append(continuation)
+        }
+    }
+}
+
+private actor BlockingWidgetReloader: WidgetTimelineReloading {
+    private(set) var reloadCount = 0
+    private var firstReloadStarted: CheckedContinuation<Void, Never>?
+    private var firstReloadRelease: CheckedContinuation<Void, Never>?
+
+    func reload() async throws {
+        reloadCount += 1
+        if reloadCount == 1 {
+            firstReloadStarted?.resume()
+            firstReloadStarted = nil
+            await withCheckedContinuation { firstReloadRelease = $0 }
+        }
+    }
+
+    func waitForFirstReload() async {
+        guard reloadCount == 0 else { return }
+        await withCheckedContinuation { firstReloadStarted = $0 }
+    }
+
+    func releaseFirstReload() {
+        firstReloadRelease?.resume()
+        firstReloadRelease = nil
+    }
+}
+
+private actor FailingOnceWidgetReloader: WidgetTimelineReloading {
+    private(set) var reloadCount = 0
+
+    func reload() async throws {
+        reloadCount += 1
+        if reloadCount == 1 { throw PublisherTestError.injectedFailure }
+    }
+}
+
+private actor FailingOnceWidgetStore: WidgetSnapshotWriting {
+    private(set) var writeCount = 0
+
+    func writeSnapshot(_ snapshot: WidgetSnapshot) async throws {
+        writeCount += 1
+        if writeCount == 1 { throw PublisherTestError.injectedFailure }
     }
 }
 

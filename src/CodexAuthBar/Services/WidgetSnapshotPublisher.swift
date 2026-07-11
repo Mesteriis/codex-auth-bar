@@ -9,11 +9,11 @@ enum WidgetPublishReason: Sendable {
 }
 
 protocol WidgetTimelineReloading: Sendable {
-    func reload() async
+    func reload() async throws
 }
 
 struct SystemWidgetTimelineReloader: WidgetTimelineReloading {
-    func reload() async {
+    func reload() async throws {
         WidgetCenter.shared.reloadTimelines(ofKind: CodexWidgetContract.kind)
     }
 }
@@ -34,6 +34,8 @@ actor WidgetSnapshotPublisher {
     private let fallbackName: @Sendable (Int) -> String
     private var lastReload: Date?
     private var lastAccounts: [WidgetAccountSnapshot]?
+    private var reloadPending = false
+    private var reloadInProgress = false
 
     init(
         store: any WidgetSnapshotWriting,
@@ -48,14 +50,24 @@ actor WidgetSnapshotPublisher {
     func publish(registry: RegistryV4, reason: WidgetPublishReason, now: Date = .now) async throws {
         let snapshot = WidgetSnapshotProjector.project(registry, generatedAt: now, fallbackName: fallbackName)
         let contentChanged = snapshot.accounts != lastAccounts
-        guard contentChanged || reason.forcesReload else { return }
+        if contentChanged || reason.forcesReload {
+            try await store.writeSnapshot(snapshot)
+            lastAccounts = snapshot.accounts
+            reloadPending = true
+        }
 
-        try await store.writeSnapshot(snapshot)
-        lastAccounts = snapshot.accounts
-
+        guard reloadPending, !reloadInProgress else { return }
         let elapsed = lastReload.map { now.timeIntervalSince($0) } ?? .infinity
         guard reason.forcesReload || elapsed >= Self.automaticReloadInterval else { return }
-        await reloader.reload()
-        lastReload = now
+        reloadInProgress = true
+        do {
+            try await reloader.reload()
+            lastReload = now
+            reloadPending = false
+            reloadInProgress = false
+        } catch {
+            reloadInProgress = false
+            throw error
+        }
     }
 }
