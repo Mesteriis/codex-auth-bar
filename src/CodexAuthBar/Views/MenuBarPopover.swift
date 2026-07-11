@@ -130,7 +130,11 @@ private struct AccountRow: View {
         }
         .buttonStyle(.plain)
         .padding(.vertical, 5)
-        .accessibilityLabel(Text("Switch to \(account.displayName)"))
+        .accessibilityIdentifier("CodexAuthBar.account.\(account.accountKey.rawValue)")
+        .accessibilityLabel(Text(verbatim: String(
+            format: String(localized: "Switch to %@"),
+            account.displayName
+        )))
     }
 }
 

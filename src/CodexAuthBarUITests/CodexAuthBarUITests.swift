@@ -34,7 +34,9 @@ final class CodexAuthBarUITests: XCTestCase {
         XCTAssertTrue(search.waitForExistence(timeout: 3))
         search.click()
         search.typeText("work")
-        XCTAssertTrue(app.buttons["Switch to work"].waitForExistence(timeout: 2))
+        let accountButton = app.buttons["CodexAuthBar.account.test-user::test-account"]
+        XCTAssertTrue(accountButton.waitForExistence(timeout: 2))
+        XCTAssertEqual(accountButton.label, "Switch to work")
         search.typeKey(.tab, modifierFlags: [])
         XCTAssertTrue(app.descendants(matching: .any)["CodexAuthBar.previous"].waitForExistence(timeout: 2))
         XCTAssertTrue(app.descendants(matching: .any)["CodexAuthBar.manage"].waitForExistence(timeout: 2))
