@@ -12,7 +12,8 @@ struct CodexAuthWidgetView: View {
     }
 
     var body: some View {
-        Group {
+        ZStack {
+            WidgetMaterialSurface()
             switch entry.loadState {
             case .loaded:
                 switch previewFamily ?? family {
@@ -27,8 +28,23 @@ struct CodexAuthWidgetView: View {
                 WidgetEmptyState(isInvalid: true)
             }
         }
-        .containerBackground(.fill.tertiary, for: .widget)
+        .padding(WidgetLayoutMetrics.surfaceInset)
+        .containerBackground(for: .widget) {
+            Color.clear
+        }
         .widgetURL(URL(string: "codexauthbar://accounts"))
+    }
+}
+
+private struct WidgetMaterialSurface: View {
+    var body: some View {
+        RoundedRectangle(cornerRadius: 18, style: .continuous)
+            .fill(.regularMaterial)
+            .overlay {
+                RoundedRectangle(cornerRadius: 18, style: .continuous)
+                    .stroke(.white.opacity(0.16), lineWidth: 0.75)
+            }
+            .shadow(color: .black.opacity(0.14), radius: 8, y: 3)
     }
 }
 

@@ -7,12 +7,14 @@ struct SmallWidgetView: View {
     var body: some View {
         let presentation = WidgetPresentation(entry.snapshot, family: .systemSmall, now: entry.date)
         if let account = presentation.accounts.first {
-            VStack(alignment: .leading, spacing: 4) {
+            VStack(alignment: .leading, spacing: 2) {
                 WidgetHeader(freshness: presentation.freshness, generatedAt: entry.snapshot.map { Date(timeIntervalSince1970: TimeInterval($0.generatedAtMilliseconds) / 1_000) }, now: entry.date)
-                Text(safeName(account.account.displayName))
-                    .font(.headline.weight(.semibold)).lineLimit(1).minimumScaleFactor(0.8)
-                if let plan = account.account.plan {
-                    Text(plan.label).font(.caption).foregroundStyle(.secondary).lineLimit(1)
+                HStack(spacing: 4) {
+                    Text(safeName(account.account.displayName))
+                        .font(.subheadline.weight(.semibold)).lineLimit(1).minimumScaleFactor(0.8)
+                    if let plan = account.account.plan {
+                        Text(plan.label).font(.caption2).foregroundStyle(.secondary).lineLimit(1)
+                    }
                 }
                 HStack {
                     Spacer(minLength: 0)
@@ -22,7 +24,7 @@ struct SmallWidgetView: View {
                         reset: account.nearestReset,
                         now: entry.date,
                         freshness: presentation.freshness,
-                        diameter: 76
+                        diameter: 64
                     )
                     Spacer(minLength: 0)
                 }
@@ -64,9 +66,9 @@ struct SmallLimitLegend: View {
 
     var body: some View {
         HStack(spacing: 5) {
-            LimitLegendItem(color: LimitSeverity(remaining: fiveHour).color, label: String(localized: "5h limit"), value: WidgetStrings.percent(fiveHour))
+            LimitLegendItem(color: LimitSeverity(remaining: fiveHour).color(for: .fiveHour), label: String(localized: "5h limit"), value: WidgetStrings.percent(fiveHour))
             Text("|").foregroundStyle(.tertiary)
-            LimitLegendItem(color: LimitSeverity(remaining: weekly).color, label: String(localized: "W"), value: WidgetStrings.percent(weekly), accessibilityLabel: String(localized: "Weekly"))
+            LimitLegendItem(color: LimitSeverity(remaining: weekly).color(for: .weekly), label: String(localized: "W"), value: WidgetStrings.percent(weekly), accessibilityLabel: String(localized: "Weekly"))
         }
         .font(.caption2.monospacedDigit())
         .frame(maxWidth: .infinity)
@@ -101,13 +103,16 @@ struct ResetFooter: View {
         HStack(spacing: 4) {
             if includesLabel { Image(systemName: "arrow.clockwise") }
             if let reset {
-                let relative = WidgetStrings.relativeTime(until: reset, now: now)
-                Text(includesLabel ? String(format: String(localized: "Resets %@"), relative) : relative)
+                let compact = WidgetStrings.compactReset(until: reset, now: now)
+                Text(includesLabel ? String(format: String(localized: "Reset %@"), compact) : compact)
             } else {
                 Text("Unavailable")
             }
             if freshness == .aging { Image(systemName: "clock.badge.exclamationmark") }
         }
-        .font(.caption2).foregroundStyle(.secondary).lineLimit(1)
+        .font(.caption2.monospacedDigit()).foregroundStyle(.secondary).lineLimit(1)
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(String(localized: "Reset"))
+        .accessibilityValue(reset.map { WidgetStrings.relativeTime(until: $0, now: now) } ?? String(localized: "Unavailable"))
     }
 }

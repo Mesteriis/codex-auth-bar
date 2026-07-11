@@ -34,7 +34,14 @@ enum WidgetPreviewHarness {
     static let stale = entry(freshnessAge: 86_400, count: 7)
 
     static func healthy(family: WidgetFamily) -> CodexWidgetEntry {
-        entry(count: accountCount(for: family))
+        CodexWidgetEntry(
+            date: now,
+            snapshot: entry(count: accountCount(for: family)).snapshot,
+            loadState: .loaded,
+            previewHealthSummary: family == .systemLarge
+                ? WidgetHealthSummary(healthy: 3, low: 1, stale: 1)
+                : nil
+        )
     }
 
     @ViewBuilder

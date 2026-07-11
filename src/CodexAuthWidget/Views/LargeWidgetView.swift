@@ -8,7 +8,7 @@ struct LargeWidgetView: View {
         let presentation = WidgetPresentation(entry.snapshot, family: .systemLarge, now: entry.date)
         VStack(alignment: .leading, spacing: 5) {
             WidgetHeader(freshness: presentation.freshness, generatedAt: entry.snapshot.map { Date(timeIntervalSince1970: TimeInterval($0.generatedAtMilliseconds) / 1_000) }, now: entry.date)
-            HealthSummary(accounts: presentation.accounts)
+            HealthSummary(accounts: presentation.accounts, previewSummary: entry.previewHealthSummary)
             if presentation.accounts.isEmpty { WidgetEmptyState() }
             else {
                 LargeColumnHeaders()
@@ -18,28 +18,32 @@ struct LargeWidgetView: View {
                 }
             }
         }
-        .padding(.horizontal, WidgetLayoutMetrics.ledgerHorizontalInset)
     }
 }
 
 private struct HealthSummary: View {
     let accounts: [WidgetAccountPresentation]
+    let previewSummary: WidgetHealthSummary?
 
     var body: some View {
-        let low = accounts.filter { account in
+        let computedLow = accounts.filter { account in
             [account.fiveHourRemainingPercent, account.weeklyRemainingPercent].contains { LimitSeverity(remaining: $0) == .warning || LimitSeverity(remaining: $0) == .critical }
         }.count
         let unavailable = accounts.filter { $0.fiveHourRemainingPercent == nil || $0.weeklyRemainingPercent == nil }.count
-        let healthy = max(0, accounts.count - low - unavailable)
+        let summary = previewSummary ?? WidgetHealthSummary(
+            healthy: max(0, accounts.count - computedLow - unavailable),
+            low: computedLow,
+            stale: 0
+        )
         return HStack(spacing: 4) {
-            Text(String(format: String(localized: "%d healthy"), healthy)).foregroundStyle(.indigo)
+            Text(String(format: String(localized: "%d healthy"), summary.healthy)).foregroundStyle(.blue)
             Text("·").foregroundStyle(.secondary)
-            Text(String(format: String(localized: "%d low"), low)).foregroundStyle(.orange)
+            Text(String(format: String(localized: "%d low"), summary.low)).foregroundStyle(.orange)
             Text("·").foregroundStyle(.secondary)
-            Text(String(format: String(localized: "%d unavailable"), unavailable)).foregroundStyle(.secondary)
+            Text(String(format: String(localized: "%d stale"), summary.stale)).foregroundStyle(.secondary)
         }
         .font(.caption)
-        .accessibilityLabel(String(format: String(localized: "%d healthy, %d low, %d unavailable"), healthy, low, unavailable))
+        .accessibilityLabel(String(format: String(localized: "%d healthy, %d low, %d stale"), summary.healthy, summary.low, summary.stale))
     }
 }
 
@@ -70,13 +74,34 @@ private struct LargeLedgerRow: View {
             Text(account.account.plan?.label ?? String(localized: "Unavailable"))
                 .font(.caption).foregroundStyle(.secondary).lineLimit(1).frame(width: 55, alignment: .leading)
             Divider().frame(height: 38).padding(.trailing, 4)
-            LimitRing(title: "5h", accessibilityTitle: String(localized: "5h"), remaining: account.fiveHourRemainingPercent, diameter: 36, lineWidth: 3).frame(width: 44)
-            LimitRing(title: "W", accessibilityTitle: String(localized: "Weekly"), remaining: account.weeklyRemainingPercent, diameter: 36, lineWidth: 3).frame(width: 44)
+            LedgerLimitCell(title: "5h", accessibilityTitle: String(localized: "5h"), kind: .fiveHour, remaining: account.fiveHourRemainingPercent).frame(width: 44)
+            LedgerLimitCell(title: "W", accessibilityTitle: String(localized: "Weekly"), kind: .weekly, remaining: account.weeklyRemainingPercent).frame(width: 44)
             ResetFooter(reset: account.nearestReset, now: now, freshness: freshness).frame(width: 62, alignment: .trailing)
         }
         .accessibilityElement(children: .combine)
         .accessibilityLabel(Text(safeName(account.account.displayName)))
-        .accessibilityValue(Text(LimitAccessibility.accountValue(fiveHourRemaining: account.fiveHourRemainingPercent, weeklyRemaining: account.weeklyRemainingPercent, reset: account.nearestReset, now: now, freshness: freshness)))
+        .accessibilityValue(Text(AccountAccessibility.value(account: account, now: now, freshness: freshness)))
+    }
+}
+
+enum AccountAccessibility {
+    static func value(account: WidgetAccountPresentation, now: Date, freshness: WidgetFreshness?) -> String {
+        let plan = account.account.plan?.label ?? String(localized: "Unavailable")
+        let status = statusText(for: account)
+        let limits = LimitAccessibility.accountValue(
+            fiveHourRemaining: account.fiveHourRemainingPercent,
+            weeklyRemaining: account.weeklyRemainingPercent,
+            reset: account.nearestReset,
+            now: now,
+            freshness: freshness
+        )
+        return String(format: String(localized: "%@, %@, %@"), plan, status, limits)
+    }
+
+    private static func statusText(for account: WidgetAccountPresentation) -> String {
+        if account.fiveHourRemainingPercent == nil || account.weeklyRemainingPercent == nil { return String(localized: "Unavailable") }
+        if [account.fiveHourRemainingPercent, account.weeklyRemainingPercent].contains(where: { LimitSeverity(remaining: $0) != .normal }) { return String(localized: "Low") }
+        return String(localized: "Healthy")
     }
 }
 
@@ -100,6 +125,6 @@ private extension WidgetAccountPresentation {
         if fiveHourRemainingPercent == nil || weeklyRemainingPercent == nil { return .secondary }
         if [fiveHourRemainingPercent, weeklyRemainingPercent].contains(where: { LimitSeverity(remaining: $0) == .critical }) { return .red }
         if [fiveHourRemainingPercent, weeklyRemainingPercent].contains(where: { LimitSeverity(remaining: $0) == .warning }) { return .orange }
-        return .indigo
+        return .blue
     }
 }

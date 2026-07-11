@@ -6,6 +6,26 @@ struct CodexWidgetEntry: TimelineEntry {
     let date: Date
     let snapshot: WidgetSnapshot?
     let loadState: WidgetLoadState
+    /// Preview-only presentation data; production timeline entries leave this nil.
+    let previewHealthSummary: WidgetHealthSummary?
+
+    init(
+        date: Date,
+        snapshot: WidgetSnapshot?,
+        loadState: WidgetLoadState,
+        previewHealthSummary: WidgetHealthSummary? = nil
+    ) {
+        self.date = date
+        self.snapshot = snapshot
+        self.loadState = loadState
+        self.previewHealthSummary = previewHealthSummary
+    }
+}
+
+struct WidgetHealthSummary {
+    let healthy: Int
+    let low: Int
+    let stale: Int
 }
 
 enum WidgetLoadState: Equatable {

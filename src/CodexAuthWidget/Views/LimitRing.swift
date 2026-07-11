@@ -13,9 +13,9 @@ enum LimitSeverity: Equatable {
         else { self = .normal }
     }
 
-    var color: Color {
+    func color(for kind: LimitKind) -> Color {
         switch self {
-        case .normal: .indigo
+        case .normal: kind.normalColor
         case .warning: .orange
         case .critical: .red
         case .unavailable: .secondary
@@ -28,6 +28,18 @@ enum LimitSeverity: Equatable {
         case .warning: "exclamationmark"
         case .critical: "exclamationmark.triangle.fill"
         case .unavailable: "questionmark"
+        }
+    }
+}
+
+enum LimitKind {
+    case fiveHour
+    case weekly
+
+    var normalColor: Color {
+        switch self {
+        case .fiveHour: .blue
+        case .weekly: .purple
         }
     }
 }
@@ -77,13 +89,22 @@ enum LimitAccessibility {
             )
         }
         let format = String(localized: "%@ limit, %d percent remaining", locale: locale)
-        return String(format: format, locale: locale, title, Int(remaining))
+        var result = String(format: format, locale: locale, title, Int(remaining))
+        switch LimitSeverity(remaining: remaining) {
+        case .warning:
+            result += ", " + String(localized: "low remaining", locale: locale)
+        case .critical:
+            result += ", " + String(localized: "critical remaining", locale: locale)
+        case .normal, .unavailable:
+            break
+        }
+        return result
     }
 }
 
 enum WidgetStrings {
     static func percent(_ remaining: Double?) -> String {
-        guard let remaining else { return String(localized: "Unavailable") }
+        guard let remaining else { return String(localized: "—") }
         return String(format: String(localized: "%d%%"), Int(remaining))
     }
 
@@ -111,16 +132,32 @@ enum WidgetStrings {
         if seconds < 60 * 60 { return String(format: String(localized: "%dm"), Int(seconds / 60)) }
         return String(format: String(localized: "%dh"), Int(seconds / 3_600))
     }
+
+    static func compactReset(until date: Date, now: Date = .now) -> String {
+        let seconds = max(0, date.timeIntervalSince(now))
+        let days = Int(seconds) / 86_400
+        let hours = (Int(seconds) % 86_400) / 3_600
+        let minutes = (Int(seconds) % 3_600) / 60
+        if days > 0 {
+            return String(format: String(localized: "%dd %dh"), days, hours)
+        }
+        if hours > 0 {
+            return String(format: String(localized: "%dh %dm"), hours, minutes)
+        }
+        return String(format: String(localized: "%dm"), max(1, minutes))
+    }
 }
 
 enum WidgetLayoutMetrics {
     /// Keeps ledger labels and gauge strokes clear of the widget canvas edge.
     static let ledgerHorizontalInset: CGFloat = 12
+    static let surfaceInset: CGFloat = 12
 }
 
 struct LimitRing: View {
     let title: String
     let accessibilityTitle: String
+    let kind: LimitKind
     let remaining: Double?
     let diameter: CGFloat
     let lineWidth: CGFloat
@@ -133,18 +170,10 @@ struct LimitRing: View {
             if let remaining {
                 Circle()
                     .trim(from: 0, to: min(max(remaining / 100, 0), 1))
-                    .stroke(severity.color, style: StrokeStyle(lineWidth: lineWidth, lineCap: .round))
+                    .stroke(severity.color(for: kind), style: StrokeStyle(lineWidth: lineWidth, lineCap: .round))
                     .rotationEffect(.degrees(-90))
             } else {
                 Circle().stroke(.secondary, style: StrokeStyle(lineWidth: 1, dash: [3, 3]))
-            }
-            VStack(spacing: 1) {
-                Text(title).font(.caption2).foregroundStyle(.secondary)
-                Text(WidgetStrings.percent(remaining))
-                    .font(.caption.monospacedDigit().weight(.semibold))
-                if severity != .normal {
-                    Image(systemName: severity.symbol).font(.system(size: 8, weight: .bold))
-                }
             }
         }
         .frame(width: diameter, height: diameter)
@@ -164,13 +193,10 @@ struct DualLimitRing: View {
 
     var body: some View {
         ZStack {
-            RingStroke(remaining: weeklyRemaining, inset: 0, lineWidth: 7)
-            RingStroke(remaining: fiveHourRemaining, inset: 11, lineWidth: 7)
-            VStack(spacing: 3) {
-                Text(WidgetStrings.percent(fiveHourRemaining))
-                    .font(.title3.monospacedDigit().weight(.bold))
+            RingStroke(remaining: weeklyRemaining, kind: .weekly, inset: 0, lineWidth: 7)
+            RingStroke(remaining: fiveHourRemaining, kind: .fiveHour, inset: 11, lineWidth: 7)
+            VStack(spacing: 2) {
                 Text(String(localized: "5h")).font(.caption2).foregroundStyle(.secondary)
-                Text(WidgetStrings.percent(weeklyRemaining)).font(.caption.monospacedDigit().weight(.semibold)).foregroundStyle(LimitSeverity(remaining: weeklyRemaining).color)
                 Text(String(localized: "W")).font(.caption2).foregroundStyle(.secondary)
             }
         }
@@ -183,6 +209,7 @@ struct DualLimitRing: View {
 
 private struct RingStroke: View {
     let remaining: Double?
+    let kind: LimitKind
     let inset: CGFloat
     let lineWidth: CGFloat
 
@@ -195,7 +222,7 @@ private struct RingStroke: View {
                     Circle()
                         .inset(by: inset)
                         .trim(from: 0, to: min(max(remaining / 100, 0), 1))
-                        .stroke(LimitSeverity(remaining: remaining).color, style: StrokeStyle(lineWidth: lineWidth, lineCap: .round))
+                        .stroke(LimitSeverity(remaining: remaining).color(for: kind), style: StrokeStyle(lineWidth: lineWidth, lineCap: .round))
                         .rotationEffect(.degrees(-90))
                 } else {
                     Circle().inset(by: inset).stroke(.secondary, style: StrokeStyle(lineWidth: 1, dash: [3, 3]))
