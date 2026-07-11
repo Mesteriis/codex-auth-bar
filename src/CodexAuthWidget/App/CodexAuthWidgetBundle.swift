@@ -9,8 +9,8 @@ struct CodexAuthWidgetBundle: WidgetBundle {
 
 struct CodexAccountsWidget: Widget {
     var body: some WidgetConfiguration {
-        StaticConfiguration(kind: CodexWidgetContract.kind, provider: PlaceholderProvider()) { entry in
-            Text("Codex Auth Bar")
+        StaticConfiguration(kind: CodexWidgetContract.kind, provider: CodexWidgetProvider()) { entry in
+            CodexAccountsWidgetView(entry: entry)
                 .containerBackground(.fill.tertiary, for: .widget)
         }
         .configurationDisplayName("Codex Accounts")
@@ -19,18 +19,36 @@ struct CodexAccountsWidget: Widget {
     }
 }
 
-struct PlaceholderEntry: TimelineEntry {
-    let date: Date
-}
+private struct CodexAccountsWidgetView: View {
+    let entry: CodexWidgetEntry
+    @Environment(\.widgetFamily) private var family
 
-struct PlaceholderProvider: TimelineProvider {
-    func placeholder(in context: Context) -> PlaceholderEntry { .init(date: .now) }
-
-    func getSnapshot(in context: Context, completion: @escaping (PlaceholderEntry) -> Void) {
-        completion(.init(date: .now))
-    }
-
-    func getTimeline(in context: Context, completion: @escaping (Timeline<PlaceholderEntry>) -> Void) {
-        completion(Timeline(entries: [.init(date: .now)], policy: .never))
+    var body: some View {
+        switch entry.loadState {
+        case .missing:
+            ContentUnavailableView("No widget data", systemImage: "clock")
+        case .invalid:
+            ContentUnavailableView("Widget data unavailable", systemImage: "exclamationmark.triangle")
+        case .loaded:
+            let presentation = WidgetPresentation(entry.snapshot, family: family, now: entry.date)
+            VStack(alignment: .leading, spacing: 5) {
+                ForEach(presentation.accounts) { account in
+                    HStack {
+                        Text(account.account.displayName).lineLimit(1)
+                        Spacer()
+                        if let percent = account.fiveHourRemainingPercent {
+                            Text(percent / 100, format: .percent.precision(.fractionLength(0)))
+                                .monospacedDigit()
+                        }
+                    }
+                }
+                if presentation.hiddenCount > 0 {
+                    Text("+\(presentation.hiddenCount) more")
+                }
+                if presentation.freshness == .stale {
+                    Text("Data is stale")
+                }
+            }
+        }
     }
 }
