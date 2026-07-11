@@ -1,0 +1,21 @@
+{
+  "sourceLanguage" : "en",
+  "strings" : {
+    "%@ limit, %d percent remaining" : { "localizations" : { "ru" : { "stringUnit" : { "state" : "translated", "value" : "Лимит %@, осталось %d процентов" } } } },
+    "%d percent remaining" : { "localizations" : { "ru" : { "stringUnit" : { "state" : "translated", "value" : "Осталось %d процентов" } } } },
+    "+ %d more in Codex Auth Bar" : { "localizations" : { "ru" : { "stringUnit" : { "state" : "translated", "value" : "Ещё %d в Codex Auth Bar" } } } },
+    "5h" : { "localizations" : { "ru" : { "stringUnit" : { "state" : "translated", "value" : "5 ч" } } } },
+    "Codex Accounts" : { "localizations" : { "ru" : { "stringUnit" : { "state" : "translated", "value" : "Аккаунты Codex" } } } },
+    "No managed accounts" : { "localizations" : { "ru" : { "stringUnit" : { "state" : "translated", "value" : "Нет сохранённых аккаунтов" } } } },
+    "Open Codex Auth Bar to set up the widget" : { "localizations" : { "ru" : { "stringUnit" : { "state" : "translated", "value" : "Откройте Codex Auth Bar для настройки виджета" } } } },
+    "Resets %@" : { "localizations" : { "ru" : { "stringUnit" : { "state" : "translated", "value" : "Сброс %@" } } } },
+    "resets %@" : { "localizations" : { "ru" : { "stringUnit" : { "state" : "translated", "value" : "сброс %@" } } } },
+    "Stale" : { "localizations" : { "ru" : { "stringUnit" : { "state" : "translated", "value" : "Устарело" } } } },
+    "Unavailable" : { "localizations" : { "ru" : { "stringUnit" : { "state" : "translated", "value" : "Недоступно" } } } },
+    "Updated %@" : { "localizations" : { "ru" : { "stringUnit" : { "state" : "translated", "value" : "Обновлено %@" } } } },
+    "Weekly" : { "localizations" : { "ru" : { "stringUnit" : { "state" : "translated", "value" : "Неделя" } } } },
+    "5h limit unavailable" : { "localizations" : { "ru" : { "stringUnit" : { "state" : "translated", "value" : "Лимит 5 ч недоступен" } } } },
+    "data out of date" : { "localizations" : { "ru" : { "stringUnit" : { "state" : "translated", "value" : "данные устарели" } } } }
+  },
+  "version" : "1.0"
+}

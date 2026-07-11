@@ -48,6 +48,21 @@ final class CodexAuthWidgetTests: XCTestCase {
         )
     }
 
+    func testRingSemanticsUseWarningAndCriticalThresholds() {
+        XCTAssertEqual(LimitSeverity(remaining: nil), .unavailable)
+        XCTAssertEqual(LimitSeverity(remaining: 20), .normal)
+        XCTAssertEqual(LimitSeverity(remaining: 19), .warning)
+        XCTAssertEqual(LimitSeverity(remaining: 10), .warning)
+        XCTAssertEqual(LimitSeverity(remaining: 9), .critical)
+    }
+
+    func testAccessibilityValueIncludesNumberResetAndStaleness() {
+        let value = LimitAccessibility.value(title: "5h", remaining: 72, reset: Date(timeIntervalSince1970: 7_200), now: Date(timeIntervalSince1970: 0), freshness: .aging, locale: Locale(identifier: "en"))
+        XCTAssertTrue(value.contains("72"))
+        XCTAssertTrue(value.localizedCaseInsensitiveContains("remaining"))
+        XCTAssertTrue(value.localizedCaseInsensitiveContains("out of date"))
+    }
+
     private func widgetSnapshot(
         accountCount: Int = 1,
         resets: [Date] = []

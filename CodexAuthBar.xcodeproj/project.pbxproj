@@ -31,6 +31,13 @@
 		100000000000000000000017 /* CodexAuthCore in Frameworks */ = {isa = PBXBuildFile; productRef = 900000000000000000000004 /* CodexAuthCore */; };
 		100000000000000000000018 /* SwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 200000000000000000000014 /* SwiftUI.framework */; };
 		100000000000000000000019 /* WidgetKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 200000000000000000000015 /* WidgetKit.framework */; };
+		10000000000000000000001A /* LimitRing.swift in Sources */ = {isa = PBXBuildFile; fileRef = 20000000000000000000001C /* LimitRing.swift */; };
+		10000000000000000000001B /* CodexAuthWidgetView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 20000000000000000000001D /* CodexAuthWidgetView.swift */; };
+		10000000000000000000001C /* SmallWidgetView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 20000000000000000000001E /* SmallWidgetView.swift */; };
+		10000000000000000000001D /* MediumWidgetView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 20000000000000000000001F /* MediumWidgetView.swift */; };
+		10000000000000000000001E /* LargeWidgetView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 200000000000000000000020 /* LargeWidgetView.swift */; };
+		10000000000000000000001F /* WidgetPreviewHarness.swift in Sources */ = {isa = PBXBuildFile; fileRef = 200000000000000000000021 /* WidgetPreviewHarness.swift */; };
+		100000000000000000000020 /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = 200000000000000000000022 /* Localizable.xcstrings */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -66,6 +73,13 @@
 		200000000000000000000019 /* WidgetTimelineProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WidgetTimelineProvider.swift; sourceTree = "<group>"; };
 		20000000000000000000001A /* CodexAuthWidgetTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CodexAuthWidgetTests.swift; sourceTree = "<group>"; };
 		20000000000000000000001B /* CodexAuthWidgetTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = CodexAuthWidgetTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		20000000000000000000001C /* LimitRing.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LimitRing.swift; sourceTree = "<group>"; };
+		20000000000000000000001D /* CodexAuthWidgetView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CodexAuthWidgetView.swift; sourceTree = "<group>"; };
+		20000000000000000000001E /* SmallWidgetView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SmallWidgetView.swift; sourceTree = "<group>"; };
+		20000000000000000000001F /* MediumWidgetView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MediumWidgetView.swift; sourceTree = "<group>"; };
+		200000000000000000000020 /* LargeWidgetView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LargeWidgetView.swift; sourceTree = "<group>"; };
+		200000000000000000000021 /* WidgetPreviewHarness.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WidgetPreviewHarness.swift; sourceTree = "<group>"; };
+		200000000000000000000022 /* Localizable.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = Localizable.xcstrings; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -90,9 +104,10 @@
 		600000000000000000000007 /* CodexAuthBarTests */ = {isa = PBXGroup; children = (200000000000000000000009); path = src/CodexAuthBarTests; sourceTree = "<group>"; };
 		600000000000000000000008 /* CodexAuthBarUITests */ = {isa = PBXGroup; children = (20000000000000000000000A); path = src/CodexAuthBarUITests; sourceTree = "<group>"; };
 		600000000000000000000009 /* Resources */ = {isa = PBXGroup; children = (200000000000000000000007, 20000000000000000000000E); path = Resources; sourceTree = "<group>"; };
-		60000000000000000000000A /* CodexAuthWidget */ = {isa = PBXGroup; children = (60000000000000000000000B /* App */, 600000000000000000000010 /* Models */, 600000000000000000000011 /* Services */, 60000000000000000000000C /* Resources */); path = src/CodexAuthWidget; sourceTree = "<group>"; };
+		60000000000000000000000A /* CodexAuthWidget */ = {isa = PBXGroup; children = (60000000000000000000000B /* App */, 600000000000000000000010 /* Models */, 600000000000000000000011 /* Services */, 60000000000000000000000C /* Resources */, 600000000000000000000012 /* Views */); path = src/CodexAuthWidget; sourceTree = "<group>"; };
 		60000000000000000000000B /* App */ = {isa = PBXGroup; children = (200000000000000000000012 /* CodexAuthWidgetBundle.swift */,); path = App; sourceTree = "<group>"; };
-		60000000000000000000000C /* Resources */ = {isa = PBXGroup; children = (200000000000000000000013 /* Info.plist */,); path = Resources; sourceTree = "<group>"; };
+		60000000000000000000000C /* Resources */ = {isa = PBXGroup; children = (200000000000000000000013 /* Info.plist */, 200000000000000000000022 /* Localizable.xcstrings */); path = Resources; sourceTree = "<group>"; };
+		600000000000000000000012 /* Views */ = {isa = PBXGroup; children = (20000000000000000000001C /* LimitRing.swift */, 20000000000000000000001D /* CodexAuthWidgetView.swift */, 20000000000000000000001E /* SmallWidgetView.swift */, 20000000000000000000001F /* MediumWidgetView.swift */, 200000000000000000000020 /* LargeWidgetView.swift */, 200000000000000000000021 /* WidgetPreviewHarness.swift */); path = Views; sourceTree = "<group>"; };
 		60000000000000000000000F /* CodexAuthWidgetTests */ = {isa = PBXGroup; children = (20000000000000000000001A /* CodexAuthWidgetTests.swift */,); path = src/CodexAuthWidgetTests; sourceTree = "<group>"; };
 		600000000000000000000010 /* Models */ = {isa = PBXGroup; children = (200000000000000000000018 /* WidgetEntry.swift */,); path = Models; sourceTree = "<group>"; };
 		600000000000000000000011 /* Services */ = {isa = PBXGroup; children = (200000000000000000000019 /* WidgetTimelineProvider.swift */,); path = Services; sourceTree = "<group>"; };
@@ -116,7 +131,7 @@
 		400000000000000000000005 = {isa = PBXResourcesBuildPhase; buildActionMask = 2147483647; files = (10000000000000000000000B); runOnlyForDeploymentPostprocessing = 0; };
 		400000000000000000000007 = {isa = PBXResourcesBuildPhase; buildActionMask = 2147483647; files = (); runOnlyForDeploymentPostprocessing = 0; };
 		400000000000000000000009 = {isa = PBXResourcesBuildPhase; buildActionMask = 2147483647; files = (); runOnlyForDeploymentPostprocessing = 0; };
-		40000000000000000000000C = {isa = PBXResourcesBuildPhase; buildActionMask = 2147483647; files = (); runOnlyForDeploymentPostprocessing = 0; };
+		40000000000000000000000C = {isa = PBXResourcesBuildPhase; buildActionMask = 2147483647; files = (100000000000000000000020 /* Localizable.xcstrings in Resources */,); runOnlyForDeploymentPostprocessing = 0; };
 		400000000000000000000010 = {isa = PBXResourcesBuildPhase; buildActionMask = 2147483647; files = (); runOnlyForDeploymentPostprocessing = 0; };
 /* End PBXResourcesBuildPhase section */
 
@@ -124,8 +139,8 @@
 		400000000000000000000004 = {isa = PBXSourcesBuildPhase; buildActionMask = 2147483647; files = (100000000000000000000001, 100000000000000000000002, 100000000000000000000003, 100000000000000000000004, 100000000000000000000005, 100000000000000000000006, 10000000000000000000000A, 100000000000000000000011, 100000000000000000000012); runOnlyForDeploymentPostprocessing = 0; };
 		400000000000000000000006 = {isa = PBXSourcesBuildPhase; buildActionMask = 2147483647; files = (100000000000000000000008); runOnlyForDeploymentPostprocessing = 0; };
 		400000000000000000000008 = {isa = PBXSourcesBuildPhase; buildActionMask = 2147483647; files = (100000000000000000000009); runOnlyForDeploymentPostprocessing = 0; };
-		40000000000000000000000B = {isa = PBXSourcesBuildPhase; buildActionMask = 2147483647; files = (10000000000000000000000C /* CodexAuthWidgetBundle.swift in Sources */, 100000000000000000000014 /* WidgetEntry.swift in Sources */, 100000000000000000000015 /* WidgetTimelineProvider.swift in Sources */,); runOnlyForDeploymentPostprocessing = 0; };
-		40000000000000000000000F = {isa = PBXSourcesBuildPhase; buildActionMask = 2147483647; files = (100000000000000000000016 /* CodexAuthWidgetTests.swift in Sources */, 100000000000000000000014 /* WidgetEntry.swift in Sources */, 100000000000000000000015 /* WidgetTimelineProvider.swift in Sources */,); runOnlyForDeploymentPostprocessing = 0; };
+		40000000000000000000000B = {isa = PBXSourcesBuildPhase; buildActionMask = 2147483647; files = (10000000000000000000000C /* CodexAuthWidgetBundle.swift in Sources */, 100000000000000000000014 /* WidgetEntry.swift in Sources */, 100000000000000000000015 /* WidgetTimelineProvider.swift in Sources */, 10000000000000000000001A /* LimitRing.swift in Sources */, 10000000000000000000001B /* CodexAuthWidgetView.swift in Sources */, 10000000000000000000001C /* SmallWidgetView.swift in Sources */, 10000000000000000000001D /* MediumWidgetView.swift in Sources */, 10000000000000000000001E /* LargeWidgetView.swift in Sources */, 10000000000000000000001F /* WidgetPreviewHarness.swift in Sources */,); runOnlyForDeploymentPostprocessing = 0; };
+		40000000000000000000000F = {isa = PBXSourcesBuildPhase; buildActionMask = 2147483647; files = (100000000000000000000016 /* CodexAuthWidgetTests.swift in Sources */, 100000000000000000000014 /* WidgetEntry.swift in Sources */, 100000000000000000000015 /* WidgetTimelineProvider.swift in Sources */, 10000000000000000000001A /* LimitRing.swift in Sources */,); runOnlyForDeploymentPostprocessing = 0; };
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
