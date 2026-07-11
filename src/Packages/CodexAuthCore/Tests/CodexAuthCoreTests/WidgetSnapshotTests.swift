@@ -114,6 +114,56 @@ import Testing
         #expect(limit.effectiveRemainingPercent(at: Date(timeIntervalSince1970: 99)) == 7)
         #expect(limit.effectiveRemainingPercent(at: Date(timeIntervalSince1970: 100)) == 100)
     }
+
+    @Test func widgetStoreRoundTripsPrivateAtomicSnapshot() throws {
+        let root = try temporaryDirectory()
+        let store = WidgetSnapshotStore(containerURL: root)
+        let snapshot = WidgetSnapshot(
+            generatedAtMilliseconds: 1,
+            accounts: []
+        )
+
+        try store.write(snapshot)
+
+        #expect(try store.load() == snapshot)
+        let attributes = try FileManager.default.attributesOfItem(atPath: store.snapshotURL.path)
+        #expect((attributes[.posixPermissions] as? NSNumber)?.intValue == 0o600)
+    }
+
+    @Test func widgetStoreRejectsFutureSchemaWithoutChangingBytes() throws {
+        let root = try temporaryDirectory()
+        let store = WidgetSnapshotStore(containerURL: root)
+        try store.write(WidgetSnapshot(generatedAtMilliseconds: 1, accounts: []))
+        let original = try Data(contentsOf: store.snapshotURL)
+        let future = Data(#"{"schema_version":2,"generated_at_ms":2,"accounts":[]}"#.utf8)
+        try future.write(to: store.snapshotURL)
+
+        #expect(throws: WidgetSnapshotStoreError.unsupportedSchema(2)) {
+            _ = try store.load()
+        }
+        #expect(try Data(contentsOf: store.snapshotURL) == future)
+        #expect(original != future)
+    }
+
+    @Test func widgetStoreRejectsSymlinkSnapshot() throws {
+        let root = try temporaryDirectory()
+        let store = WidgetSnapshotStore(containerURL: root)
+        try FileManager.default.createDirectory(
+            at: store.snapshotURL.deletingLastPathComponent(),
+            withIntermediateDirectories: true
+        )
+        try FileManager.default.createSymbolicLink(
+            at: store.snapshotURL,
+            withDestinationURL: root.appending(path: "outside.json")
+        )
+        #expect(throws: StorageError.self) { _ = try store.load() }
+    }
+}
+
+private func temporaryDirectory() throws -> URL {
+    let root = FileManager.default.temporaryDirectory.appending(path: UUID().uuidString, directoryHint: .isDirectory)
+    try FileManager.default.createDirectory(at: root, withIntermediateDirectories: true)
+    return root
 }
 
 private func widgetAccount(

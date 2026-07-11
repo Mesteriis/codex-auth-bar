@@ -61,6 +61,18 @@ enum SecureFiles {
         return try read(descriptor, status: status, maximumBytes: maximumBytes, path: url.path)
     }
 
+    static func regularFileExists(_ url: URL) throws -> Bool {
+        let directory = try openParentDirectory(of: url)
+        defer { close(directory) }
+        var status = stat()
+        guard fstatat(directory, url.lastPathComponent, &status, AT_SYMLINK_NOFOLLOW) == 0 else {
+            if errno == ENOENT { return false }
+            throw StorageError.cannotOpen(url.path)
+        }
+        guard (status.st_mode & S_IFMT) == S_IFREG else { throw StorageError.unsafePath }
+        return true
+    }
+
     static func fingerprint(_ url: URL) throws -> FileFingerprint {
         let directory = try openParentDirectory(of: url)
         defer { close(directory) }
