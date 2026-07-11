@@ -91,7 +91,7 @@ enum WidgetStrings {
         String(
             format: String(localized: "%@ · %@"),
             String(localized: "5h"),
-            String(localized: "Weekly")
+            String(localized: "W")
         )
     }
 }

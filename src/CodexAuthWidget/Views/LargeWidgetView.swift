@@ -36,7 +36,7 @@ private struct LedgerRow: View {
         HStack(spacing: 10) {
             Text(safeName(account.account.displayName)).font(.subheadline.weight(.medium)).lineLimit(1).frame(width: 130, alignment: .leading)
             LimitRing(title: "5h", remaining: account.fiveHourRemainingPercent, diameter: 40, lineWidth: 5)
-            LimitRing(title: "Weekly", remaining: account.weeklyRemainingPercent, diameter: 40, lineWidth: 5)
+            LimitRing(title: "W", remaining: account.weeklyRemainingPercent, diameter: 40, lineWidth: 5)
             ResetFooter(reset: account.nearestReset, now: now, freshness: freshness).frame(maxWidth: .infinity, alignment: .trailing)
         }
         .accessibilityElement(children: .combine)

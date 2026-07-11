@@ -19,6 +19,7 @@
     "Stale" : { "localizations" : { "ru" : { "stringUnit" : { "state" : "translated", "value" : "Устарело" } } } },
     "Shows remaining Codex account limits." : { "localizations" : { "ru" : { "stringUnit" : { "state" : "translated", "value" : "Показывает оставшиеся лимиты аккаунтов Codex." } } } },
     "Unavailable" : { "localizations" : { "ru" : { "stringUnit" : { "state" : "translated", "value" : "Недоступно" } } } },
+    "W" : { "localizations" : { "ru" : { "stringUnit" : { "state" : "translated", "value" : "W" } } } },
     "Updated %@" : { "localizations" : { "ru" : { "stringUnit" : { "state" : "translated", "value" : "Обновлено %@" } } } },
     "Weekly" : { "localizations" : { "ru" : { "stringUnit" : { "state" : "translated", "value" : "Неделя" } } } },
     "5h limit unavailable" : { "localizations" : { "ru" : { "stringUnit" : { "state" : "translated", "value" : "Лимит 5 ч недоступен" } } } },

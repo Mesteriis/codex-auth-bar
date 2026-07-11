@@ -53,7 +53,7 @@ struct LimitLegend: View {
     var body: some View {
         VStack(alignment: .trailing, spacing: 1) {
             Text(String(format: String(localized: "%@ %@"), String(localized: "5h"), WidgetStrings.percent(fiveHour)))
-            Text(String(format: String(localized: "%@ %@"), String(localized: "Weekly"), WidgetStrings.percent(weekly)))
+            Text(String(format: String(localized: "%@ %@"), String(localized: "W"), WidgetStrings.percent(weekly)))
         }
         .font(.caption2.monospacedDigit()).foregroundStyle(.secondary)
     }
