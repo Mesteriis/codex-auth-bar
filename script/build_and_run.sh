@@ -41,9 +41,29 @@ case "$MODE" in
   --verify|verify)
     VERIFY_HOME="$ROOT_DIR/build/verify-home"
     mkdir -p "$VERIFY_HOME"
+    VERIFY_PID=""
+    cleanup_verify() {
+      if [[ -n "$VERIFY_PID" ]] && kill -0 "$VERIFY_PID" 2>/dev/null; then
+        kill "$VERIFY_PID" 2>/dev/null || true
+        for _ in {1..40}; do
+          kill -0 "$VERIFY_PID" 2>/dev/null || return 0
+          sleep 0.1
+        done
+      fi
+      return 0
+    }
+    trap cleanup_verify EXIT INT TERM
     /usr/bin/open -n --env CODEX_HOME="$VERIFY_HOME" "$APP"
-    sleep 2
-    pgrep -x CodexAuthBar >/dev/null
+    for _ in {1..50}; do
+      VERIFY_PID="$(pgrep -f "^${BINARY}$" | head -n 1 || true)"
+      [[ -n "$VERIFY_PID" ]] && break
+      sleep 0.1
+    done
+    [[ -n "$VERIFY_PID" ]]
+    kill -0 "$VERIFY_PID"
+    cleanup_verify
+    ! kill -0 "$VERIFY_PID" 2>/dev/null
+    trap - EXIT INT TERM
     ;;
   *)
     echo "usage: $0 [run|--debug|--logs|--telemetry|--verify]" >&2

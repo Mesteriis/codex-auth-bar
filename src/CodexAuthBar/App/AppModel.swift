@@ -2,12 +2,21 @@ import AppKit
 import CodexAuthCore
 import Darwin
 import Observation
+import OSLog
 import SwiftUI
 import UserNotifications
 
 @MainActor
 @Observable
 final class AppModel {
+    private static let switchLogger = Logger(
+        subsystem: "com.mesteriis.CodexAuthBar",
+        category: "account-switch"
+    )
+    private static let lifecycleLogger = Logger(
+        subsystem: "com.mesteriis.CodexAuthBar",
+        category: "lifecycle"
+    )
     static let autoSwitchNotificationCategory = "CODEX_AUTH_BAR_AUTO_SWITCH"
     static let autoSwitchNotificationAction = "SWITCH_AND_RESTART"
     private(set) var accounts: [AccountRecord] = []
@@ -42,6 +51,7 @@ final class AppModel {
             $0.isEmpty ? nil : URL(fileURLWithPath: $0, isDirectory: true)
         }
         home = CodexHome.resolve(preference: preference)
+        Self.lifecycleLogger.notice("Codex home resolved from: \(Self.homeSource(preference: preference), privacy: .public)")
         repository = AccountRepository(home: home)
         profileStore = ProfileStore(home: home)
         usageService = ChatGPTUsageService(home: home)
@@ -105,8 +115,10 @@ final class AppModel {
         isLoading = true
         defer { isLoading = false }
         do {
+            Self.switchLogger.info("Switch requested; restart preference: \(restart, privacy: .public)")
             try await processController.ensureFileCredentialStore()
             let wasRunning = await processController.isDesktopRunning()
+            Self.switchLogger.info("Credential store accepted; desktop running: \(wasRunning, privacy: .public)")
             if restart, wasRunning { try await processController.terminateDesktopApp(timeout: .seconds(10)) }
             do {
                 _ = try await repository.switchAccount(to: key)
@@ -116,10 +128,45 @@ final class AppModel {
             }
             if restart, wasRunning { try await processController.launchDesktopApp(CodexLaunchRequest(codexHome: home.root)) }
             statusMessage = restart && wasRunning ? "Switched and restarted Codex" : "Account switched"
+            Self.switchLogger.notice("Switch completed; desktop restarted: \(restart && wasRunning, privacy: .public)")
             await reload()
         } catch {
+            Self.switchLogger.error("Switch failed; code: \(Self.diagnosticCode(for: error), privacy: .public)")
             errorMessage = error.localizedDescription
         }
+    }
+
+    private static func diagnosticCode(for error: Error) -> String {
+        switch error {
+        case ProcessError.codexNotFound: "codex_not_found"
+        case ProcessError.desktopDidNotTerminate: "desktop_did_not_terminate"
+        case ProcessError.profileUnsupported: "profile_unsupported"
+        case ProcessError.incompatibleCredentialStore(_): "incompatible_credential_store"
+        case ProcessError.commandFailed(_): "codex_command_failed"
+        case AccountError.accountNotFound: "account_not_found"
+        case AccountError.snapshotMissing: "snapshot_missing"
+        case AccountError.noPreviousAccount: "no_previous_account"
+        case AccountError.invalidAlias: "invalid_alias"
+        case AccountError.duplicateAlias: "duplicate_alias"
+        case AccountError.concurrentModification: "concurrent_modification"
+        case StorageError.concurrentModification: "storage_concurrent_modification"
+        case StorageError.unsafePath: "unsafe_path"
+        case StorageError.cannotOpen(_): "cannot_open"
+        case StorageError.cannotWrite(_): "cannot_write"
+        case StorageError.recoveryRequired: "recovery_required"
+        default: String(reflecting: type(of: error))
+        }
+    }
+
+    private static func homeSource(preference: URL?) -> String {
+        if preference != nil { return "preference" }
+        guard let override = ProcessInfo.processInfo.environment["CODEX_HOME"], !override.isEmpty else {
+            return "default"
+        }
+        var isDirectory: ObjCBool = false
+        return FileManager.default.fileExists(atPath: override, isDirectory: &isDirectory) && isDirectory.boolValue
+            ? "environment"
+            : "default"
     }
 
     func switchPrevious() async {
