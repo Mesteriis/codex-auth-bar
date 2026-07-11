@@ -81,6 +81,16 @@
         }
       }
     },
+    "Account switching requires top-level cli_auth_credentials_store = \"file\". Codex Auth Bar never changes this setting automatically." : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Для переключения аккаунтов требуется cli_auth_credentials_store = \"file\" на верхнем уровне. Codex Auth Bar никогда не меняет эту настройку автоматически."
+          }
+        }
+      }
+    },
     "Accounts" : {
       "localizations" : {
         "ru" : {
@@ -377,6 +387,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Скопировать команду"
+          }
+        }
+      }
+    },
+    "Copy file credential setting" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Скопировать настройку файлового хранилища"
+          }
+        }
+      }
+    },
+    "Copy setting" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Скопировать настройку"
           }
         }
       }
@@ -1017,6 +1047,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Показать в Finder"
+          }
+        }
+      }
+    },
+    "Reveal config.toml" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Показать config.toml"
           }
         }
       }

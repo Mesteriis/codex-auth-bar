@@ -17,7 +17,7 @@ enum ProcessError: LocalizedError {
         case .desktopDidNotTerminate: "Codex App did not terminate; the account was not changed."
         case .profileUnsupported: "This Codex CLI does not support --profile."
         case let .incompatibleCredentialStore(mode):
-            "Codex credential storage is \(mode.rawValue). Set cli_auth_credentials_store = \"file\" in config.toml before switching accounts. Codex Auth Bar will not change this setting automatically."
+            "Codex credential storage is \(mode.rawValue). Set cli_auth_credentials_store = \"file\" at the top level of config.toml before switching accounts. Codex Auth Bar will not change this setting automatically."
         }
     }
 }
@@ -46,6 +46,12 @@ actor CodexProcessController: CodexProcessControlling {
             environment["CODEX_HOME"] = home.root.path
             if let report = try? run(executable, ["doctor", "--json"], environment: environment).output {
                 credentialStore = (try? DoctorReportParser.credentialStore(from: Data(report.utf8))) ?? .unknown
+            }
+        }
+        if credentialStore == .unknown {
+            let config = home.root.appending(path: "config.toml")
+            if let contents = try? String(contentsOf: config, encoding: .utf8) {
+                credentialStore = CredentialStoreConfigParser.mode(in: contents)
             }
         }
         return CodexCapabilities(

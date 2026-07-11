@@ -35,6 +35,7 @@ final class AppModel {
     var loginOutput = ""
     var loginInProgress = false
     var operationReport = ""
+    private(set) var requiresFileCredentialStore = false
 
     let home: CodexHome
     private let repository: AccountRepository
@@ -117,6 +118,7 @@ final class AppModel {
         do {
             Self.switchLogger.info("Switch requested; restart preference: \(restart, privacy: .public)")
             try await processController.ensureFileCredentialStore()
+            requiresFileCredentialStore = false
             let wasRunning = await processController.isDesktopRunning()
             Self.switchLogger.info("Credential store accepted; desktop running: \(wasRunning, privacy: .public)")
             if restart, wasRunning { try await processController.terminateDesktopApp(timeout: .seconds(10)) }
@@ -131,9 +133,27 @@ final class AppModel {
             Self.switchLogger.notice("Switch completed; desktop restarted: \(restart && wasRunning, privacy: .public)")
             await reload()
         } catch {
+            if case ProcessError.incompatibleCredentialStore = error {
+                requiresFileCredentialStore = true
+            }
             Self.switchLogger.error("Switch failed; code: \(Self.diagnosticCode(for: error), privacy: .public)")
             errorMessage = error.localizedDescription
         }
+    }
+
+    func revealCodexConfig() {
+        let config = home.root.appending(path: "config.toml")
+        if FileManager.default.fileExists(atPath: config.path) {
+            NSWorkspace.shared.activateFileViewerSelecting([config])
+        } else {
+            NSWorkspace.shared.open(home.root)
+        }
+    }
+
+    func copyFileCredentialSetting() {
+        NSPasteboard.general.clearContents()
+        NSPasteboard.general.setString(#"cli_auth_credentials_store = "file""#, forType: .string)
+        statusMessage = "Copied the required credential setting"
     }
 
     private static func diagnosticCode(for error: Error) -> String {

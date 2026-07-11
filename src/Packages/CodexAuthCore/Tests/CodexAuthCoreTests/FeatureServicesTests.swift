@@ -4,6 +4,30 @@ import Testing
 @testable import CodexAuthCore
 
 struct FeatureServicesTests {
+    @Test func workflowReportsUseStableSnakeCaseCodableContracts() throws {
+        let imported = ImportReport(
+            events: [ImportEvent(source: "fixture", outcome: .imported, detail: "ok")],
+            importedAccountKeys: ["user::account"]
+        )
+        let exported = ExportReport(exportedCount: 1, skippedCount: 2, destination: URL(fileURLWithPath: "/tmp/export"))
+        let removed = RemovalReport(removedAccountKeys: ["user::account"], promotedAccountKey: "other::account")
+        let encoder = JSONEncoder()
+
+        let importJSON = String(decoding: try encoder.encode(imported), as: UTF8.self)
+        let exportJSON = String(decoding: try encoder.encode(exported), as: UTF8.self)
+        let removalJSON = String(decoding: try encoder.encode(removed), as: UTF8.self)
+
+        #expect(importJSON.contains("\"imported_account_keys\""))
+        #expect(!importJSON.contains("importedAccountKeys"))
+        #expect(exportJSON.contains("\"exported_count\""))
+        #expect(exportJSON.contains("\"skipped_count\""))
+        #expect(removalJSON.contains("\"removed_account_keys\""))
+        #expect(removalJSON.contains("\"promoted_account_key\""))
+        #expect(try JSONDecoder().decode(ImportReport.self, from: encoder.encode(imported)) == imported)
+        #expect(try JSONDecoder().decode(ExportReport.self, from: encoder.encode(exported)) == exported)
+        #expect(try JSONDecoder().decode(RemovalReport.self, from: encoder.encode(removed)) == removed)
+    }
+
     @Test func importsAPIKeyUsingVerifiedIdentityWithoutRegistrySecret() async throws {
         let fixture = try FeatureFixture()
         let source = fixture.root.appending(path: "api-key.json")
@@ -338,6 +362,14 @@ struct FeatureServicesTests {
         #expect(try DoctorReportParser.credentialStore(from: report) == .keyring)
         #expect(try DoctorReportParser.credentialStore(from: alternate) == .ephemeral)
         #expect(try DoctorReportParser.credentialStore(from: Data(#"{"checks":{}}"#.utf8)) == .unknown)
+    }
+
+    @Test func configParserFindsOnlyExplicitTopLevelCredentialStore() {
+        #expect(CredentialStoreConfigParser.mode(in: #"cli_auth_credentials_store = "file""#) == .file)
+        #expect(CredentialStoreConfigParser.mode(in: "cli_auth_credentials_store='keyring' # comment") == .keyring)
+        #expect(CredentialStoreConfigParser.mode(in: "[profile.test]\ncli_auth_credentials_store = \"file\"") == .unknown)
+        #expect(CredentialStoreConfigParser.mode(in: "# cli_auth_credentials_store = \"file\"") == .unknown)
+        #expect(CredentialStoreConfigParser.mode(in: "model = \"gpt-5\"") == .unknown)
     }
 }
 

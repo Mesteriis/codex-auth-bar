@@ -10,7 +10,7 @@ public enum StorageError: Error, Equatable, Sendable {
     case recoveryRequired
 }
 
-public struct FileFingerprint: Equatable, Sendable {
+public struct FileFingerprint: Codable, Equatable, Sendable {
     public var exists: Bool
     public var inode: UInt64
     public var size: UInt64
@@ -18,6 +18,11 @@ public struct FileFingerprint: Equatable, Sendable {
     public var sha256: String
 
     public static let missing = FileFingerprint(exists: false, inode: 0, size: 0, modifiedAt: 0, sha256: "")
+
+    enum CodingKeys: String, CodingKey {
+        case exists, inode, size, sha256
+        case modifiedAt = "modified_at"
+    }
 }
 
 enum SecureFiles {
@@ -168,7 +173,7 @@ enum SecureFiles {
             let right = try $1.resourceValues(forKeys: [.contentModificationDateKey]).contentModificationDate ?? .distantPast
             return left > right
         }
-        for url in sorted.dropFirst(count) { try FileManager.default.removeItem(at: url) }
+        for url in sorted.dropFirst(count) { try removeRegularFile(url) }
     }
 
     private static func openParentDirectory(of url: URL) throws -> Int32 {

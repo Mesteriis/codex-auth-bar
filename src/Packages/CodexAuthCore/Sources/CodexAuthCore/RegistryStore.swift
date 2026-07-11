@@ -1,7 +1,7 @@
 import Darwin
 import Foundation
 
-public struct RegistrySnapshot: Sendable {
+public struct RegistrySnapshot: Codable, Equatable, Sendable {
     public var registry: RegistryV4
     public var fingerprint: FileFingerprint
 
@@ -11,7 +11,7 @@ public struct RegistrySnapshot: Sendable {
     }
 }
 
-public enum RecoveryResult: Equatable, Sendable {
+public enum RecoveryResult: String, Codable, Equatable, Sendable {
     case nothingToRecover
     case journalRemoved
     case registryReconciled

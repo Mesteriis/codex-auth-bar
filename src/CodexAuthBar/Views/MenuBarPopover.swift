@@ -47,6 +47,13 @@ struct MenuBarPopover: View {
 
             if let error = model.errorMessage {
                 Text(error).font(.caption).foregroundStyle(.red).lineLimit(3)
+                if model.requiresFileCredentialStore {
+                    HStack {
+                        Button("Copy setting") { model.copyFileCredentialSetting() }
+                        Button("Reveal config.toml") { model.revealCodexConfig() }
+                    }
+                    .controlSize(.small)
+                }
             } else if !model.statusMessage.isEmpty {
                 Text(model.statusMessage).font(.caption).foregroundStyle(.secondary)
             }

@@ -1,8 +1,8 @@
 import Foundation
 
-public enum ImportFormat: Sendable { case automatic, standard, cpa, purge }
+public enum ImportFormat: String, Codable, Sendable { case automatic, standard, cpa, purge }
 
-public struct ImportRequest: Sendable {
+public struct ImportRequest: Codable, Equatable, Sendable {
     public var source: URL
     public var format: ImportFormat
     public var alias: String?
@@ -26,11 +26,16 @@ public struct ImportEvent: Codable, Equatable, Sendable {
 public struct ImportReport: Codable, Equatable, Sendable {
     public var events: [ImportEvent]
     public var importedAccountKeys: [AccountKey]
+
+    enum CodingKeys: String, CodingKey {
+        case events
+        case importedAccountKeys = "imported_account_keys"
+    }
 }
 
-public enum ExportFormat: Sendable { case standard, cpa }
+public enum ExportFormat: String, Codable, Sendable { case standard, cpa }
 
-public struct ExportRequest: Sendable {
+public struct ExportRequest: Codable, Equatable, Sendable {
     public var destination: URL?
     public var format: ExportFormat
     public init(destination: URL? = nil, format: ExportFormat = .standard) {
@@ -39,15 +44,26 @@ public struct ExportRequest: Sendable {
     }
 }
 
-public struct ExportReport: Equatable, Sendable {
+public struct ExportReport: Codable, Equatable, Sendable {
     public var exportedCount: Int
     public var skippedCount: Int
     public var destination: URL
+
+    enum CodingKeys: String, CodingKey {
+        case exportedCount = "exported_count"
+        case skippedCount = "skipped_count"
+        case destination
+    }
 }
 
-public struct RemovalReport: Equatable, Sendable {
+public struct RemovalReport: Codable, Equatable, Sendable {
     public var removedAccountKeys: [AccountKey]
     public var promotedAccountKey: AccountKey?
+
+    enum CodingKeys: String, CodingKey {
+        case removedAccountKeys = "removed_account_keys"
+        case promotedAccountKey = "promoted_account_key"
+    }
 }
 
 public extension AccountRepository {
@@ -322,14 +338,14 @@ public extension AccountRepository {
                     directory: home.accounts,
                     baseName: "auth.json"
                 )
-                try FileManager.default.removeItem(at: home.auth)
+                try SecureFiles.removeRegularFile(home.auth)
             }
         }
         if let previous = registry.previousActiveAccountKey, removing.contains(previous) { registry.previousActiveAccountKey = nil }
         _ = try await store.commit(registry, expected: loaded.fingerprint)
         for key in removing {
             let snapshot = home.snapshot(for: key)
-            if FileManager.default.fileExists(atPath: snapshot.path) { try FileManager.default.removeItem(at: snapshot) }
+            if FileManager.default.fileExists(atPath: snapshot.path) { try SecureFiles.removeRegularFile(snapshot) }
         }
         return RemovalReport(removedAccountKeys: Array(removing).sorted { $0.rawValue < $1.rawValue }, promotedAccountKey: promoted)
     }

@@ -55,6 +55,36 @@ public enum DoctorReportParser {
     }
 }
 
+public enum CredentialStoreConfigParser {
+    public static func mode(in contents: String) -> CredentialStoreMode {
+        var isTopLevel = true
+        for rawLine in contents.split(whereSeparator: \Character.isNewline) {
+            let line = rawLine.trimmingCharacters(in: .whitespaces)
+            if line.isEmpty || line.hasPrefix("#") { continue }
+            if line.hasPrefix("[") {
+                isTopLevel = false
+                continue
+            }
+            guard isTopLevel, let separator = line.firstIndex(of: "=") else { continue }
+            let key = line[..<separator].trimmingCharacters(in: .whitespaces)
+            guard key == "cli_auth_credentials_store" else { continue }
+            let rawValue = line[line.index(after: separator)...]
+                .split(separator: "#", maxSplits: 1, omittingEmptySubsequences: false)[0]
+                .trimmingCharacters(in: .whitespaces)
+                .trimmingCharacters(in: CharacterSet(charactersIn: "\"'"))
+                .lowercased()
+            switch rawValue {
+            case "file": return .file
+            case "keyring": return .keyring
+            case "auto": return .auto
+            case "ephemeral": return .ephemeral
+            default: return .unknown
+            }
+        }
+        return .unknown
+    }
+}
+
 public struct CodexCapabilities: Sendable {
     public var executable: URL
     public var version: String

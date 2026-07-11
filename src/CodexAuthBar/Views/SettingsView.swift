@@ -27,6 +27,12 @@ struct SettingsView: View {
                 Text("Changes to CODEX_HOME take effect after restarting Codex Auth Bar.")
                     .font(.caption).foregroundStyle(.secondary)
                 TextField("Codex CLI path", text: $codexCLIPath)
+                HStack {
+                    Button("Reveal config.toml") { model.revealCodexConfig() }
+                    Button("Copy file credential setting") { model.copyFileCredentialSetting() }
+                }
+                Text("Account switching requires top-level cli_auth_credentials_store = \"file\". Codex Auth Bar never changes this setting automatically.")
+                    .font(.caption).foregroundStyle(.secondary)
             }
             Section("Usage API") {
                 Toggle("Use remote usage and workspace APIs", isOn: $apiRefreshEnabled)

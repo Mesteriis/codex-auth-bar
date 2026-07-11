@@ -8,20 +8,30 @@ public enum RefreshPolicy: Sendable {
     case allRemote
 }
 
-public struct AccountState: Sendable {
+public struct AccountState: Codable, Equatable, Sendable {
     public var registry: RegistryV4
     public init(registry: RegistryV4) { self.registry = registry }
 }
 
-public struct SwitchReceipt: Equatable, Sendable {
+public struct SwitchReceipt: Codable, Equatable, Sendable {
     public var selectedAccountKey: AccountKey
     public var previousAccountKey: AccountKey?
     public var backupURL: URL?
+
+    enum CodingKeys: String, CodingKey {
+        case selectedAccountKey = "selected_account_key"
+        case previousAccountKey = "previous_account_key"
+        case backupURL = "backup_url"
+    }
 }
 
-public struct CleanReport: Equatable, Sendable {
+public struct CleanReport: Codable, Equatable, Sendable {
     public var deletedFiles: [String]
     public init(deletedFiles: [String]) { self.deletedFiles = deletedFiles }
+
+    enum CodingKeys: String, CodingKey {
+        case deletedFiles = "deleted_files"
+    }
 }
 
 public enum AccountError: Error, Equatable, Sendable {
@@ -255,7 +265,7 @@ public actor AccountRepository {
                 if let priorAuth {
                     try SecureFiles.copyPreservingDestinationMode(priorAuth, to: home.auth)
                 } else if FileManager.default.fileExists(atPath: home.auth.path) {
-                    try FileManager.default.removeItem(at: home.auth)
+                    try SecureFiles.removeRegularFile(home.auth)
                 }
                 try await store.removeJournal()
             }
@@ -266,7 +276,7 @@ public actor AccountRepository {
                 if let priorAuth {
                     try SecureFiles.copyPreservingDestinationMode(priorAuth, to: home.auth)
                 } else if FileManager.default.fileExists(atPath: home.auth.path) {
-                    try FileManager.default.removeItem(at: home.auth)
+                    try SecureFiles.removeRegularFile(home.auth)
                 }
                 try await store.removeJournal()
             }
@@ -326,7 +336,7 @@ public actor AccountRepository {
                       let key = info.accountKey,
                       CodexHome.snapshotFileName(for: key) == name
                 else { continue }
-                try FileManager.default.removeItem(at: entry)
+                try SecureFiles.removeRegularFile(entry)
                 deleted.append(name)
             }
         }
