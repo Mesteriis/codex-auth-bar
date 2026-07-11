@@ -64,14 +64,14 @@ struct LedgerLimitCell: View {
     let remaining: Double?
 
     var body: some View {
-        HStack(spacing: 2) {
-            LimitRing(title: title, accessibilityTitle: accessibilityTitle, kind: kind, remaining: remaining, diameter: 20, lineWidth: 2)
-            Text(WidgetStrings.percent(remaining))
-                .font(.caption2.monospacedDigit().weight(.medium))
-                .foregroundStyle(LimitSeverity(remaining: remaining).color(for: kind))
-                .lineLimit(1)
-                .minimumScaleFactor(0.7)
-        }
+        LimitRing(
+            title: title,
+            accessibilityTitle: accessibilityTitle,
+            kind: kind,
+            remaining: remaining,
+            diameter: 30,
+            lineWidth: 3
+        )
         .accessibilityElement(children: .ignore)
         .accessibilityLabel(accessibilityTitle)
         .accessibilityValue(LimitAccessibility.value(title: accessibilityTitle, remaining: remaining))

@@ -66,9 +66,9 @@ struct SmallLimitLegend: View {
 
     var body: some View {
         HStack(spacing: 5) {
-            LimitLegendItem(color: LimitSeverity(remaining: fiveHour).color(for: .fiveHour), label: String(localized: "5h limit"), value: WidgetStrings.percent(fiveHour))
+            LimitLegendItem(color: LimitSeverity(remaining: fiveHour).color(for: .fiveHour), label: String(localized: "5h limit"), accessibilityValue: WidgetStrings.percent(fiveHour))
             Text("|").foregroundStyle(.tertiary)
-            LimitLegendItem(color: LimitSeverity(remaining: weekly).color(for: .weekly), label: String(localized: "W"), value: WidgetStrings.percent(weekly), accessibilityLabel: String(localized: "Weekly"))
+            LimitLegendItem(color: LimitSeverity(remaining: weekly).color(for: .weekly), label: String(localized: "W"), accessibilityValue: WidgetStrings.percent(weekly), accessibilityLabel: String(localized: "Weekly"))
         }
         .font(.caption2.monospacedDigit())
         .frame(maxWidth: .infinity)
@@ -78,18 +78,17 @@ struct SmallLimitLegend: View {
 private struct LimitLegendItem: View {
     let color: Color
     let label: String
-    let value: String
+    let accessibilityValue: String
     var accessibilityLabel: String?
 
     var body: some View {
         HStack(spacing: 3) {
             Circle().fill(color).frame(width: 7, height: 7)
             Text(label)
-            Text(value).foregroundStyle(color)
         }
         .accessibilityElement(children: .ignore)
         .accessibilityLabel(accessibilityLabel ?? label)
-        .accessibilityValue(value)
+        .accessibilityValue(accessibilityValue)
     }
 }
 

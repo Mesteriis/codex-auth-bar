@@ -103,6 +103,11 @@ enum LimitAccessibility {
 }
 
 enum WidgetStrings {
+    static func integer(_ remaining: Double?) -> String {
+        guard let remaining else { return "—" }
+        return String(Int(remaining))
+    }
+
     static func percent(_ remaining: Double?) -> String {
         guard let remaining else { return String(localized: "—") }
         return String(format: String(localized: "%d%%"), Int(remaining))
@@ -174,6 +179,12 @@ struct LimitRing: View {
             } else {
                 Circle().stroke(.secondary, style: StrokeStyle(lineWidth: 1, dash: [3, 3]))
             }
+            Text(WidgetStrings.integer(remaining))
+                .font(.caption2.monospacedDigit().weight(.semibold))
+                .foregroundStyle(remaining == nil ? .secondary : severity.color(for: kind))
+                .lineLimit(1)
+                .minimumScaleFactor(0.65)
+                .padding(3)
         }
         .frame(width: diameter, height: diameter)
         .accessibilityElement(children: .ignore)
@@ -194,10 +205,19 @@ struct DualLimitRing: View {
         ZStack {
             RingStroke(remaining: weeklyRemaining, kind: .weekly, inset: 0, lineWidth: 7)
             RingStroke(remaining: fiveHourRemaining, kind: .fiveHour, inset: 11, lineWidth: 7)
-            VStack(spacing: 2) {
-                Text(String(localized: "5h")).font(.caption2).foregroundStyle(.secondary)
-                Text(String(localized: "W")).font(.caption2).foregroundStyle(.secondary)
+            VStack(spacing: 0) {
+                HStack(spacing: 2) {
+                    Text(String(localized: "5h")).foregroundStyle(.secondary)
+                    Text(WidgetStrings.integer(fiveHourRemaining))
+                        .foregroundStyle(LimitSeverity(remaining: fiveHourRemaining).color(for: .fiveHour))
+                }
+                HStack(spacing: 2) {
+                    Text(String(localized: "W")).foregroundStyle(.secondary)
+                    Text(WidgetStrings.integer(weeklyRemaining))
+                        .foregroundStyle(LimitSeverity(remaining: weeklyRemaining).color(for: .weekly))
+                }
             }
+            .font(.caption2.monospacedDigit().weight(.semibold))
         }
         .frame(width: diameter, height: diameter)
         .accessibilityElement(children: .ignore)

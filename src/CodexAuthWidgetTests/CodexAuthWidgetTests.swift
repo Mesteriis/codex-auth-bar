@@ -57,6 +57,8 @@ final class CodexAuthWidgetTests: XCTestCase {
         XCTAssertEqual(LimitSeverity(remaining: 19), .warning)
         XCTAssertEqual(LimitSeverity(remaining: 10), .warning)
         XCTAssertEqual(LimitSeverity(remaining: 9), .critical)
+        XCTAssertEqual(WidgetStrings.integer(72), "72")
+        XCTAssertEqual(WidgetStrings.integer(nil), "—")
     }
 
     func testCompactResetPreservesFullAccessibilityMeaning() {
