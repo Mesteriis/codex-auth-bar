@@ -5,6 +5,9 @@
       <BuildActionEntry buildForTesting="YES" buildForRunning="YES" buildForProfiling="YES" buildForArchiving="YES" buildForAnalyzing="YES">
         <BuildableReference BuildableIdentifier="primary" BlueprintIdentifier="300000000000000000000001" BuildableName="CodexAuthBar.app" BlueprintName="CodexAuthBar" ReferencedContainer="container:CodexAuthBar.xcodeproj"/>
       </BuildActionEntry>
+      <BuildActionEntry buildForTesting="YES" buildForRunning="YES" buildForProfiling="YES" buildForArchiving="YES" buildForAnalyzing="YES">
+        <BuildableReference BuildableIdentifier="primary" BlueprintIdentifier="300000000000000000000004" BuildableName="CodexAuthWidget.appex" BlueprintName="CodexAuthWidget" ReferencedContainer="container:CodexAuthBar.xcodeproj"/>
+      </BuildActionEntry>
     </BuildActionEntries>
   </BuildAction>
   <TestAction buildConfiguration="Debug" selectedDebuggerIdentifier="Xcode.DebuggerFoundation.Debugger.LLDB" selectedLauncherIdentifier="Xcode.DebuggerFoundation.Launcher.LLDB" shouldUseLaunchSchemeArgsEnv="YES">
