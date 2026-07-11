@@ -25,7 +25,14 @@ struct CompactLedgerRow: View {
 
     var body: some View {
         HStack(spacing: 8) {
-            DualLimitRing(fiveHourRemaining: account.fiveHourRemainingPercent, weeklyRemaining: account.weeklyRemainingPercent, diameter: 38)
+            DualLimitRing(
+                fiveHourRemaining: account.fiveHourRemainingPercent,
+                weeklyRemaining: account.weeklyRemainingPercent,
+                reset: account.nearestReset,
+                now: now,
+                freshness: freshness,
+                diameter: 38
+            )
             VStack(alignment: .leading, spacing: 2) {
                 Text(safeName(account.account.displayName)).font(.subheadline.weight(.medium)).lineLimit(1)
                 ResetFooter(reset: account.nearestReset, now: now, freshness: freshness)

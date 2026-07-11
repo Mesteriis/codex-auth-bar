@@ -75,7 +75,7 @@ final class CodexAuthWidgetTests: XCTestCase {
         let catalog = try JSONSerialization.jsonObject(with: data) as? [String: Any]
         let strings = try XCTUnwrap(catalog?["strings"] as? [String: Any])
 
-        for key in ["5h", "Weekly", "%@ limit unavailable", "data out of date"] {
+        for key in ["5h", "Weekly", "%@ limit unavailable", "data out of date", "Shows remaining Codex account limits."] {
             let entry = try XCTUnwrap(strings[key] as? [String: Any])
             let localizations = try XCTUnwrap(entry["localizations"] as? [String: Any])
             let russian = try XCTUnwrap(localizations["ru"] as? [String: Any])

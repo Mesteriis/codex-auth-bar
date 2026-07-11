@@ -38,7 +38,7 @@ enum WidgetPreviewHarness {
     WidgetPreviewHarness.warning
 }
 
-#Preview("Large · Increased Contrast", as: .systemLarge) {
+#Preview("Large · Stale", as: .systemLarge) {
     CodexAccountsWidget()
 } timeline: {
     WidgetPreviewHarness.stale

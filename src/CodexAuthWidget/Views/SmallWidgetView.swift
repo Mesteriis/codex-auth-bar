@@ -14,7 +14,18 @@ struct SmallWidgetView: View {
                 if let plan = account.account.plan {
                     Text(plan.label).font(.caption).foregroundStyle(.secondary).lineLimit(1)
                 }
-                HStack { Spacer(); DualLimitRing(fiveHourRemaining: account.fiveHourRemainingPercent, weeklyRemaining: account.weeklyRemainingPercent, diameter: 92); Spacer() }
+                HStack {
+                    Spacer()
+                    DualLimitRing(
+                        fiveHourRemaining: account.fiveHourRemainingPercent,
+                        weeklyRemaining: account.weeklyRemainingPercent,
+                        reset: account.nearestReset,
+                        now: entry.date,
+                        freshness: presentation.freshness,
+                        diameter: 92
+                    )
+                    Spacer()
+                }
                 ResetFooter(reset: account.nearestReset, now: entry.date, freshness: presentation.freshness)
             }
             .accessibilityElement(children: .contain)

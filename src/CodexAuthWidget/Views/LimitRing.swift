@@ -131,6 +131,9 @@ struct LimitRing: View {
 struct DualLimitRing: View {
     let fiveHourRemaining: Double?
     let weeklyRemaining: Double?
+    let reset: Date?
+    let now: Date
+    let freshness: WidgetFreshness?
     let diameter: CGFloat
 
     var body: some View {
@@ -146,7 +149,7 @@ struct DualLimitRing: View {
         .frame(width: diameter, height: diameter)
         .accessibilityElement(children: .ignore)
         .accessibilityLabel(Text(String(localized: "Limits")))
-        .accessibilityValue(Text(LimitAccessibility.accountValue(fiveHourRemaining: fiveHourRemaining, weeklyRemaining: weeklyRemaining, reset: nil, now: .now, freshness: nil)))
+        .accessibilityValue(Text(LimitAccessibility.accountValue(fiveHourRemaining: fiveHourRemaining, weeklyRemaining: weeklyRemaining, reset: reset, now: now, freshness: freshness)))
     }
 }
 

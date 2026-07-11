@@ -13,7 +13,7 @@ struct CodexAccountsWidget: Widget {
             CodexAuthWidgetView(entry: entry)
         }
         .configurationDisplayName("Codex Accounts")
-        .description("Shows remaining Codex account limits.")
+        .description(String(localized: "Shows remaining Codex account limits."))
         .supportedFamilies([.systemSmall, .systemMedium, .systemLarge])
     }
 }
