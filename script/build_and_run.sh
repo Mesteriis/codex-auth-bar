@@ -9,7 +9,16 @@ DERIVED_DATA="$ROOT_DIR/build/DerivedData"
 APP="$DERIVED_DATA/Build/Products/Debug/CodexAuthBar.app"
 BINARY="$APP/Contents/MacOS/CodexAuthBar"
 
-pkill -x CodexAuthBar >/dev/null 2>&1 || true
+binary_pids() {
+  for pid in $(pgrep -x CodexAuthBar || true); do
+    [[ "$(ps -p "$pid" -o command= 2>/dev/null)" == "$BINARY" ]] && echo "$pid"
+  done
+}
+
+case "$MODE" in
+  --verify|verify) ;;
+  *) pkill -x CodexAuthBar >/dev/null 2>&1 || true ;;
+esac
 
 xcodebuild build \
   -project "$PROJECT" \
@@ -42,6 +51,7 @@ case "$MODE" in
     VERIFY_HOME="$ROOT_DIR/build/verify-home"
     mkdir -p "$VERIFY_HOME"
     VERIFY_PID=""
+    EXISTING_PIDS=" $(binary_pids | tr '\n' ' ')"
     cleanup_verify() {
       if [[ -n "$VERIFY_PID" ]] && kill -0 "$VERIFY_PID" 2>/dev/null; then
         kill "$VERIFY_PID" 2>/dev/null || true
@@ -55,7 +65,12 @@ case "$MODE" in
     trap cleanup_verify EXIT INT TERM
     /usr/bin/open -n --env CODEX_HOME="$VERIFY_HOME" "$APP"
     for _ in {1..50}; do
-      VERIFY_PID="$(pgrep -f "^${BINARY}$" | head -n 1 || true)"
+      for candidate in $(binary_pids); do
+        if [[ "$EXISTING_PIDS" != *" $candidate "* ]]; then
+          VERIFY_PID="$candidate"
+          break
+        fi
+      done
       [[ -n "$VERIFY_PID" ]] && break
       sleep 0.1
     done
