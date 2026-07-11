@@ -68,7 +68,7 @@ final class CodexAuthWidgetTests: XCTestCase {
     }
 
     func testLedgerContentUsesAProtectedHorizontalInset() {
-        XCTAssertEqual(WidgetLayoutMetrics.ledgerHorizontalInset, 12)
+        XCTAssertEqual(WidgetLayoutMetrics.ledgerHorizontalInset, 6)
         XCTAssertGreaterThan(WidgetLayoutMetrics.ledgerHorizontalInset, 0)
     }
 
@@ -81,6 +81,14 @@ final class CodexAuthWidgetTests: XCTestCase {
         XCTAssertEqual(preview.previewHealthSummary?.healthy, 3)
         XCTAssertEqual(preview.previewHealthSummary?.low, 1)
         XCTAssertEqual(preview.previewHealthSummary?.stale, 1)
+    }
+
+    func testRenderPreviewIsTwoMinutesOldLikeTheReferenceHeader() throws {
+        let preview = WidgetPreviewHarness.healthy(family: .systemMedium)
+        let generatedAtMilliseconds = try XCTUnwrap(preview.snapshot?.generatedAtMilliseconds)
+        let generatedAt = Date(timeIntervalSince1970: TimeInterval(generatedAtMilliseconds) / 1_000)
+
+        XCTAssertEqual(WidgetStrings.compactRecency(since: generatedAt, now: preview.date), "2m")
     }
 
     func testAccessibilityValueIncludesNumberResetAndStaleness() {

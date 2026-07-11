@@ -6,7 +6,7 @@ struct MediumWidgetView: View {
 
     var body: some View {
         let presentation = WidgetPresentation(entry.snapshot, family: .systemMedium, now: entry.date)
-        VStack(alignment: .leading, spacing: 4) {
+        VStack(alignment: .leading, spacing: 5) {
             WidgetHeader(freshness: presentation.freshness, generatedAt: entry.snapshot.map { Date(timeIntervalSince1970: TimeInterval($0.generatedAtMilliseconds) / 1_000) }, now: entry.date)
             Divider()
             if presentation.accounts.isEmpty { WidgetEmptyState() }
@@ -18,6 +18,8 @@ struct MediumWidgetView: View {
                 }
             }
         }
+        .padding(.top, 2)
+        .padding(.horizontal, WidgetLayoutMetrics.ledgerHorizontalInset)
     }
 }
 
@@ -65,9 +67,9 @@ struct LedgerLimitCell: View {
 
     var body: some View {
         HStack(spacing: 2) {
-            LimitRing(title: title, accessibilityTitle: accessibilityTitle, kind: kind, remaining: remaining, diameter: 22, lineWidth: 3)
+            LimitRing(title: title, accessibilityTitle: accessibilityTitle, kind: kind, remaining: remaining, diameter: 20, lineWidth: 2)
             Text(WidgetStrings.percent(remaining))
-                .font(.caption2.monospacedDigit().weight(.semibold))
+                .font(.caption2.monospacedDigit().weight(.medium))
                 .foregroundStyle(LimitSeverity(remaining: remaining).color(for: kind))
                 .lineLimit(1)
                 .minimumScaleFactor(0.7)

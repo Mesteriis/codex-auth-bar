@@ -36,7 +36,7 @@ enum WidgetPreviewHarness {
     static func healthy(family: WidgetFamily) -> CodexWidgetEntry {
         CodexWidgetEntry(
             date: now,
-            snapshot: entry(count: accountCount(for: family)).snapshot,
+            snapshot: entry(freshnessAge: 2 * 60, count: accountCount(for: family)).snapshot,
             loadState: .loaded,
             previewHealthSummary: family == .systemLarge
                 ? WidgetHealthSummary(healthy: 3, low: 1, stale: 1)
