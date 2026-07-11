@@ -35,7 +35,7 @@ struct CompactLedgerRow: View {
         }
         .accessibilityElement(children: .combine)
         .accessibilityLabel(Text(safeName(account.account.displayName)))
-        .accessibilityValue(Text(LimitAccessibility.value(title: "5h", remaining: account.fiveHourRemainingPercent, reset: account.nearestReset, now: now, freshness: freshness)))
+        .accessibilityValue(Text(LimitAccessibility.accountValue(fiveHourRemaining: account.fiveHourRemainingPercent, weeklyRemaining: account.weeklyRemainingPercent, reset: account.nearestReset, now: now, freshness: freshness)))
     }
 }
 
@@ -44,8 +44,8 @@ struct LimitLegend: View {
     let weekly: Double?
     var body: some View {
         VStack(alignment: .trailing, spacing: 1) {
-            Text("5h \(fiveHour.map { "\(Int($0))%" } ?? "—")")
-            Text("Weekly \(weekly.map { "\(Int($0))%" } ?? "—")")
+            Text(String(format: String(localized: "%@ %@"), String(localized: "5h"), WidgetStrings.percent(fiveHour)))
+            Text(String(format: String(localized: "%@ %@"), String(localized: "Weekly"), WidgetStrings.percent(weekly)))
         }
         .font(.caption2.monospacedDigit()).foregroundStyle(.secondary)
     }

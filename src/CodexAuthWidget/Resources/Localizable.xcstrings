@@ -2,6 +2,12 @@
   "sourceLanguage" : "en",
   "strings" : {
     "%@ limit, %d percent remaining" : { "localizations" : { "ru" : { "stringUnit" : { "state" : "translated", "value" : "Лимит %@, осталось %d процентов" } } } },
+    "%@ limit unavailable" : { "localizations" : { "ru" : { "stringUnit" : { "state" : "translated", "value" : "Лимит %@ недоступен" } } } },
+    "%@ %@" : { "localizations" : { "ru" : { "stringUnit" : { "state" : "translated", "value" : "%@ %@" } } } },
+    "%@ · %@" : { "localizations" : { "ru" : { "stringUnit" : { "state" : "translated", "value" : "%@ · %@" } } } },
+    "%@, %@" : { "localizations" : { "ru" : { "stringUnit" : { "state" : "translated", "value" : "%@, %@" } } } },
+    "%d accounts" : { "localizations" : { "ru" : { "stringUnit" : { "state" : "translated", "value" : "%d аккаунтов" } } } },
+    "%d%%" : { "localizations" : { "ru" : { "stringUnit" : { "state" : "translated", "value" : "%d%%" } } } },
     "%d percent remaining" : { "localizations" : { "ru" : { "stringUnit" : { "state" : "translated", "value" : "Осталось %d процентов" } } } },
     "+ %d more in Codex Auth Bar" : { "localizations" : { "ru" : { "stringUnit" : { "state" : "translated", "value" : "Ещё %d в Codex Auth Bar" } } } },
     "5h" : { "localizations" : { "ru" : { "stringUnit" : { "state" : "translated", "value" : "5 ч" } } } },
@@ -15,6 +21,9 @@
     "Updated %@" : { "localizations" : { "ru" : { "stringUnit" : { "state" : "translated", "value" : "Обновлено %@" } } } },
     "Weekly" : { "localizations" : { "ru" : { "stringUnit" : { "state" : "translated", "value" : "Неделя" } } } },
     "5h limit unavailable" : { "localizations" : { "ru" : { "stringUnit" : { "state" : "translated", "value" : "Лимит 5 ч недоступен" } } } },
+    "Data out of date" : { "localizations" : { "ru" : { "stringUnit" : { "state" : "translated", "value" : "Данные устарели" } } } },
+    "Limits" : { "localizations" : { "ru" : { "stringUnit" : { "state" : "translated", "value" : "Лимиты" } } } },
+    "Stale data" : { "localizations" : { "ru" : { "stringUnit" : { "state" : "translated", "value" : "Устаревшие данные" } } } },
     "data out of date" : { "localizations" : { "ru" : { "stringUnit" : { "state" : "translated", "value" : "данные устарели" } } } }
   },
   "version" : "1.0"

@@ -33,25 +33,27 @@ enum LimitSeverity: Equatable {
 }
 
 enum LimitAccessibility {
-    static func value(
-        title: String,
-        remaining: Double?,
+    static func accountValue(
+        fiveHourRemaining: Double?,
+        weeklyRemaining: Double?,
         reset: Date?,
         now: Date,
         freshness: WidgetFreshness?,
         locale: Locale = .current
     ) -> String {
-        guard let remaining else {
-            return String(localized: "\(title) limit unavailable", locale: locale)
-        }
-        let format = String(localized: "%@ limit, %d percent remaining", locale: locale)
-        var result = String(format: format, locale: locale, title, Int(remaining))
+        let fiveHour = value(title: String(localized: "5h", locale: locale), remaining: fiveHourRemaining, locale: locale)
+        let weekly = value(title: String(localized: "Weekly", locale: locale), remaining: weeklyRemaining, locale: locale)
+        var result = String(
+            format: String(localized: "%@, %@", locale: locale),
+            locale: locale,
+            fiveHour,
+            weekly
+        )
         if let reset {
             let relative = RelativeDateTimeFormatter()
             relative.locale = locale
-            let resetFormat = String(localized: "resets %@", locale: locale)
             result += ", " + String(
-                format: resetFormat,
+                format: String(localized: "resets %@", locale: locale),
                 locale: locale,
                 relative.localizedString(for: reset, relativeTo: now)
             )
@@ -60,6 +62,37 @@ enum LimitAccessibility {
             result += ", " + String(localized: "data out of date", locale: locale)
         }
         return result
+    }
+
+    static func value(
+        title: String,
+        remaining: Double?,
+        locale: Locale = .current
+    ) -> String {
+        guard let remaining else {
+            return String(
+                format: String(localized: "%@ limit unavailable", locale: locale),
+                locale: locale,
+                title
+            )
+        }
+        let format = String(localized: "%@ limit, %d percent remaining", locale: locale)
+        return String(format: format, locale: locale, title, Int(remaining))
+    }
+}
+
+enum WidgetStrings {
+    static func percent(_ remaining: Double?) -> String {
+        guard let remaining else { return String(localized: "Unavailable") }
+        return String(format: String(localized: "%d%%"), Int(remaining))
+    }
+
+    static func pairLegend(fiveHour: Double?, weekly: Double?) -> String {
+        String(
+            format: String(localized: "%@ · %@"),
+            String(localized: "5h"),
+            String(localized: "Weekly")
+        )
     }
 }
 
@@ -84,7 +117,7 @@ struct LimitRing: View {
             }
             VStack(spacing: 1) {
                 Text(title).font(.caption2).foregroundStyle(.secondary)
-                Text(remaining.map { "\(Int($0))%" } ?? "—")
+                Text(WidgetStrings.percent(remaining))
                     .font(.caption.monospacedDigit().weight(.semibold))
                 if severity != .normal {
                     Image(systemName: severity.symbol).font(.system(size: 8, weight: .bold))
@@ -105,15 +138,15 @@ struct DualLimitRing: View {
             RingStroke(remaining: weeklyRemaining, inset: 0, lineWidth: 7)
             RingStroke(remaining: fiveHourRemaining, inset: 11, lineWidth: 7)
             VStack(spacing: 3) {
-                Text(fiveHourRemaining.map { "\(Int($0))%" } ?? "—")
+                Text(WidgetStrings.percent(fiveHourRemaining))
                     .font(.title3.monospacedDigit().weight(.bold))
-                Text("5h · Weekly").font(.caption2).foregroundStyle(.secondary)
+                Text(WidgetStrings.pairLegend(fiveHour: fiveHourRemaining, weekly: weeklyRemaining)).font(.caption2).foregroundStyle(.secondary)
             }
         }
         .frame(width: diameter, height: diameter)
         .accessibilityElement(children: .ignore)
-        .accessibilityLabel(Text("Limits"))
-        .accessibilityValue(Text("5h \(fiveHourRemaining.map { "\(Int($0))%" } ?? "unavailable"), Weekly \(weeklyRemaining.map { "\(Int($0))%" } ?? "unavailable")"))
+        .accessibilityLabel(Text(String(localized: "Limits")))
+        .accessibilityValue(Text(LimitAccessibility.accountValue(fiveHourRemaining: fiveHourRemaining, weeklyRemaining: weeklyRemaining, reset: nil, now: .now, freshness: nil)))
     }
 }
 

@@ -7,7 +7,7 @@ struct LargeWidgetView: View {
     var body: some View {
         let presentation = WidgetPresentation(entry.snapshot, family: .systemLarge, now: entry.date)
         VStack(alignment: .leading, spacing: 7) {
-            HStack { WidgetHeader(freshness: presentation.freshness); Spacer(); Text("\(presentation.accounts.count) accounts").font(.caption).foregroundStyle(.secondary) }
+            HStack { WidgetHeader(freshness: presentation.freshness); Spacer(); Text(String(format: String(localized: "%d accounts"), presentation.accounts.count)).font(.caption).foregroundStyle(.secondary) }
             if presentation.accounts.isEmpty { WidgetEmptyState() }
             else {
                 ForEach(presentation.accounts) { account in
@@ -19,7 +19,7 @@ struct LargeWidgetView: View {
                         Text(String(format: String(localized: "+ %d more in Codex Auth Bar"), presentation.hiddenCount))
                     }
                         .font(.caption).foregroundStyle(.secondary)
-                        .accessibilityLabel("+ \(presentation.hiddenCount) more in Codex Auth Bar")
+                        .accessibilityLabel(String(format: String(localized: "+ %d more in Codex Auth Bar"), presentation.hiddenCount))
                 }
             }
         }
@@ -40,6 +40,6 @@ private struct LedgerRow: View {
         }
         .accessibilityElement(children: .combine)
         .accessibilityLabel(Text(safeName(account.account.displayName)))
-        .accessibilityValue(Text(LimitAccessibility.value(title: "5h", remaining: account.fiveHourRemainingPercent, reset: account.nearestReset, now: now, freshness: freshness)))
+        .accessibilityValue(Text(LimitAccessibility.accountValue(fiveHourRemaining: account.fiveHourRemainingPercent, weeklyRemaining: account.weeklyRemainingPercent, reset: account.nearestReset, now: now, freshness: freshness)))
     }
 }

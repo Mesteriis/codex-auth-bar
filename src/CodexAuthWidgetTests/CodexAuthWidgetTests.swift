@@ -57,10 +57,31 @@ final class CodexAuthWidgetTests: XCTestCase {
     }
 
     func testAccessibilityValueIncludesNumberResetAndStaleness() {
-        let value = LimitAccessibility.value(title: "5h", remaining: 72, reset: Date(timeIntervalSince1970: 7_200), now: Date(timeIntervalSince1970: 0), freshness: .aging, locale: Locale(identifier: "en"))
+        let value = LimitAccessibility.accountValue(fiveHourRemaining: 72, weeklyRemaining: nil, reset: Date(timeIntervalSince1970: 7_200), now: Date(timeIntervalSince1970: 0), freshness: .aging, locale: Locale(identifier: "en"))
         XCTAssertTrue(value.contains("72"))
         XCTAssertTrue(value.localizedCaseInsensitiveContains("remaining"))
         XCTAssertTrue(value.localizedCaseInsensitiveContains("out of date"))
+        XCTAssertTrue(value.localizedCaseInsensitiveContains("weekly"))
+        XCTAssertTrue(value.localizedCaseInsensitiveContains("unavailable"))
+    }
+
+    func testRussianCatalogCoversLimitLabelsAndUnavailableCopy() throws {
+        let sourceFile = URL(fileURLWithPath: #filePath)
+        let catalogURL = sourceFile
+            .deletingLastPathComponent()
+            .deletingLastPathComponent()
+            .appendingPathComponent("CodexAuthWidget/Resources/Localizable.xcstrings")
+        let data = try Data(contentsOf: catalogURL)
+        let catalog = try JSONSerialization.jsonObject(with: data) as? [String: Any]
+        let strings = try XCTUnwrap(catalog?["strings"] as? [String: Any])
+
+        for key in ["5h", "Weekly", "%@ limit unavailable", "data out of date"] {
+            let entry = try XCTUnwrap(strings[key] as? [String: Any])
+            let localizations = try XCTUnwrap(entry["localizations"] as? [String: Any])
+            let russian = try XCTUnwrap(localizations["ru"] as? [String: Any])
+            let unit = try XCTUnwrap(russian["stringUnit"] as? [String: Any])
+            XCTAssertNotEqual(unit["value"] as? String, key)
+        }
     }
 
     private func widgetSnapshot(

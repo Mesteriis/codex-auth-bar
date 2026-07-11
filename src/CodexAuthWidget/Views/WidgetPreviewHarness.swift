@@ -48,6 +48,6 @@ enum WidgetPreviewHarness {
     CodexAuthWidgetView(entry: WidgetPreviewHarness.warning).preferredColorScheme(.dark)
 }
 
-#Preview("Widget View · Increased Contrast") {
+#Preview("Widget View · Critical") {
     CodexAuthWidgetView(entry: WidgetPreviewHarness.critical)
 }

@@ -31,14 +31,14 @@ struct WidgetHeader: View {
 
     var body: some View {
         HStack(spacing: 5) {
-            Label("Codex Accounts", systemImage: "chart.pie")
+            Label { Text(String(localized: "Codex Accounts")) } icon: { Image(systemName: "chart.pie") }
                 .font(.caption.weight(.semibold)).lineLimit(1)
             Spacer(minLength: 2)
             if let freshness, freshness != .fresh {
-                Label(freshness == .stale ? "Stale" : "Updated", systemImage: freshness == .stale ? "exclamationmark.triangle.fill" : "clock")
+                Label { Text(String(localized: freshness == .stale ? "Stale" : "Data out of date")) } icon: { Image(systemName: freshness == .stale ? "exclamationmark.triangle.fill" : "clock") }
                     .font(.caption2.weight(.medium))
                     .foregroundStyle(freshness == .stale ? .red : .orange)
-                    .accessibilityLabel(freshness == .stale ? "Stale data" : "Data out of date")
+                    .accessibilityLabel(String(localized: freshness == .stale ? "Stale data" : "Data out of date"))
             }
         }
     }
