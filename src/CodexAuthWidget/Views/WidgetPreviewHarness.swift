@@ -26,13 +26,13 @@ enum WidgetPreviewHarness {
     static let stale = entry(freshnessAge: 86_400, count: 7)
 }
 
-#Preview("Small · Light", as: .systemSmall) {
+#Preview("Small · Healthy", as: .systemSmall) {
     CodexAccountsWidget()
 } timeline: {
     WidgetPreviewHarness.healthy
 }
 
-#Preview("Medium · Dark", as: .systemMedium) {
+#Preview("Medium · Warning", as: .systemMedium) {
     CodexAccountsWidget()
 } timeline: {
     WidgetPreviewHarness.warning
