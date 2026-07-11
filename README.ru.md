@@ -14,9 +14,11 @@ Loongphy.
 проверяемый по SHA-256 experimental codext.
 
 ```bash
-swift test --package-path Packages/CodexAuthCore
+swift test --package-path src/Packages/CodexAuthCore
 ./script/build_and_run.sh --verify
 ```
+
+Весь Swift-код приложения, пакета и тестов хранится в `src/`.
 
 Токены хранятся в локальных auth-файлах Codex. Приложение не имеет аналитики и
 не отправляет данные на собственный сервер. Подробности — в английском README и

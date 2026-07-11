@@ -16,6 +16,7 @@
 		100000000000000000000008 /* CodexAuthBarTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 200000000000000000000009 /* CodexAuthBarTests.swift */; };
 		100000000000000000000009 /* CodexAuthBarUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 20000000000000000000000A /* CodexAuthBarUITests.swift */; };
 		10000000000000000000000A /* CodextManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 20000000000000000000000D /* CodextManager.swift */; };
+		10000000000000000000000B /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = 20000000000000000000000E /* Localizable.xcstrings */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -36,6 +37,7 @@
 		20000000000000000000000B /* CodexAuthBarTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = CodexAuthBarTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		20000000000000000000000C /* CodexAuthBarUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = CodexAuthBarUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		20000000000000000000000D /* CodextManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CodextManager.swift; sourceTree = "<group>"; };
+		20000000000000000000000E /* Localizable.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = Localizable.xcstrings; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -47,13 +49,13 @@
 /* Begin PBXGroup section */
 		600000000000000000000001 = {isa = PBXGroup; children = (600000000000000000000003 /* CodexAuthBar */, 600000000000000000000007 /* CodexAuthBarTests */, 600000000000000000000008 /* CodexAuthBarUITests */, 600000000000000000000002 /* Products */); sourceTree = "<group>"; };
 		600000000000000000000002 /* Products */ = {isa = PBXGroup; children = (200000000000000000000008 /* CodexAuthBar.app */, 20000000000000000000000B /* CodexAuthBarTests.xctest */, 20000000000000000000000C /* CodexAuthBarUITests.xctest */); name = Products; sourceTree = "<group>"; };
-		600000000000000000000003 /* CodexAuthBar */ = {isa = PBXGroup; children = (600000000000000000000004 /* App */, 600000000000000000000005 /* Services */, 600000000000000000000006 /* Views */, 600000000000000000000009 /* Resources */); path = CodexAuthBar; sourceTree = "<group>"; };
+		600000000000000000000003 /* CodexAuthBar */ = {isa = PBXGroup; children = (600000000000000000000004 /* App */, 600000000000000000000005 /* Services */, 600000000000000000000006 /* Views */, 600000000000000000000009 /* Resources */); path = src/CodexAuthBar; sourceTree = "<group>"; };
 		600000000000000000000004 /* App */ = {isa = PBXGroup; children = (200000000000000000000001, 200000000000000000000002); path = App; sourceTree = "<group>"; };
 		600000000000000000000005 /* Services */ = {isa = PBXGroup; children = (200000000000000000000003, 20000000000000000000000D); path = Services; sourceTree = "<group>"; };
 		600000000000000000000006 /* Views */ = {isa = PBXGroup; children = (200000000000000000000004, 200000000000000000000005, 200000000000000000000006); path = Views; sourceTree = "<group>"; };
-		600000000000000000000007 /* CodexAuthBarTests */ = {isa = PBXGroup; children = (200000000000000000000009); path = CodexAuthBarTests; sourceTree = "<group>"; };
-		600000000000000000000008 /* CodexAuthBarUITests */ = {isa = PBXGroup; children = (20000000000000000000000A); path = CodexAuthBarUITests; sourceTree = "<group>"; };
-		600000000000000000000009 /* Resources */ = {isa = PBXGroup; children = (200000000000000000000007); path = Resources; sourceTree = "<group>"; };
+		600000000000000000000007 /* CodexAuthBarTests */ = {isa = PBXGroup; children = (200000000000000000000009); path = src/CodexAuthBarTests; sourceTree = "<group>"; };
+		600000000000000000000008 /* CodexAuthBarUITests */ = {isa = PBXGroup; children = (20000000000000000000000A); path = src/CodexAuthBarUITests; sourceTree = "<group>"; };
+		600000000000000000000009 /* Resources */ = {isa = PBXGroup; children = (200000000000000000000007, 20000000000000000000000E); path = Resources; sourceTree = "<group>"; };
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -67,7 +69,7 @@
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
-		400000000000000000000005 = {isa = PBXResourcesBuildPhase; buildActionMask = 2147483647; files = (); runOnlyForDeploymentPostprocessing = 0; };
+		400000000000000000000005 = {isa = PBXResourcesBuildPhase; buildActionMask = 2147483647; files = (10000000000000000000000B); runOnlyForDeploymentPostprocessing = 0; };
 		400000000000000000000007 = {isa = PBXResourcesBuildPhase; buildActionMask = 2147483647; files = (); runOnlyForDeploymentPostprocessing = 0; };
 		400000000000000000000009 = {isa = PBXResourcesBuildPhase; buildActionMask = 2147483647; files = (); runOnlyForDeploymentPostprocessing = 0; };
 /* End PBXResourcesBuildPhase section */
@@ -85,8 +87,8 @@
 /* Begin XCBuildConfiguration section */
 		810000000000000000000001 = {isa = XCBuildConfiguration; buildSettings = {ALWAYS_SEARCH_USER_PATHS = NO; MACOSX_DEPLOYMENT_TARGET = 14.0; SDKROOT = macosx; SWIFT_VERSION = 6.0;}; name = Debug; };
 		810000000000000000000002 = {isa = XCBuildConfiguration; buildSettings = {ALWAYS_SEARCH_USER_PATHS = NO; MACOSX_DEPLOYMENT_TARGET = 14.0; SDKROOT = macosx; SWIFT_VERSION = 6.0;}; name = Release; };
-		810000000000000000000003 = {isa = XCBuildConfiguration; buildSettings = {CODE_SIGN_STYLE = Automatic; COMBINE_HIDPI_IMAGES = YES; CURRENT_PROJECT_VERSION = 1; ENABLE_APP_SANDBOX = NO; ENABLE_HARDENED_RUNTIME = YES; GENERATE_INFOPLIST_FILE = NO; INFOPLIST_FILE = CodexAuthBar/Resources/Info.plist; LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks"; MACOSX_DEPLOYMENT_TARGET = 14.0; MARKETING_VERSION = 0.1.0; ONLY_ACTIVE_ARCH = YES; PRODUCT_BUNDLE_IDENTIFIER = com.mesteriis.CodexAuthBar; PRODUCT_NAME = "$(TARGET_NAME)"; SWIFT_STRICT_CONCURRENCY = complete; SWIFT_VERSION = 6.0;}; name = Debug; };
-		810000000000000000000004 = {isa = XCBuildConfiguration; buildSettings = {CODE_SIGN_STYLE = Automatic; COMBINE_HIDPI_IMAGES = YES; CURRENT_PROJECT_VERSION = 1; ENABLE_APP_SANDBOX = NO; ENABLE_HARDENED_RUNTIME = YES; GENERATE_INFOPLIST_FILE = NO; INFOPLIST_FILE = CodexAuthBar/Resources/Info.plist; LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks"; MACOSX_DEPLOYMENT_TARGET = 14.0; MARKETING_VERSION = 0.1.0; PRODUCT_BUNDLE_IDENTIFIER = com.mesteriis.CodexAuthBar; PRODUCT_NAME = "$(TARGET_NAME)"; SWIFT_STRICT_CONCURRENCY = complete; SWIFT_VERSION = 6.0;}; name = Release; };
+		810000000000000000000003 = {isa = XCBuildConfiguration; buildSettings = {CODE_SIGN_STYLE = Automatic; COMBINE_HIDPI_IMAGES = YES; CURRENT_PROJECT_VERSION = 1; ENABLE_APP_SANDBOX = NO; ENABLE_HARDENED_RUNTIME = YES; GENERATE_INFOPLIST_FILE = NO; INFOPLIST_FILE = src/CodexAuthBar/Resources/Info.plist; LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks"; MACOSX_DEPLOYMENT_TARGET = 14.0; MARKETING_VERSION = 0.1.0; ONLY_ACTIVE_ARCH = YES; PRODUCT_BUNDLE_IDENTIFIER = com.mesteriis.CodexAuthBar; PRODUCT_NAME = "$(TARGET_NAME)"; SWIFT_STRICT_CONCURRENCY = complete; SWIFT_VERSION = 6.0;}; name = Debug; };
+		810000000000000000000004 = {isa = XCBuildConfiguration; buildSettings = {CODE_SIGN_STYLE = Automatic; COMBINE_HIDPI_IMAGES = YES; CURRENT_PROJECT_VERSION = 1; ENABLE_APP_SANDBOX = NO; ENABLE_HARDENED_RUNTIME = YES; GENERATE_INFOPLIST_FILE = NO; INFOPLIST_FILE = src/CodexAuthBar/Resources/Info.plist; LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks"; MACOSX_DEPLOYMENT_TARGET = 14.0; MARKETING_VERSION = 0.1.0; PRODUCT_BUNDLE_IDENTIFIER = com.mesteriis.CodexAuthBar; PRODUCT_NAME = "$(TARGET_NAME)"; SWIFT_STRICT_CONCURRENCY = complete; SWIFT_VERSION = 6.0;}; name = Release; };
 		810000000000000000000005 = {isa = XCBuildConfiguration; buildSettings = {BUNDLE_LOADER = "$(TEST_HOST)"; CODE_SIGN_STYLE = Automatic; GENERATE_INFOPLIST_FILE = YES; MACOSX_DEPLOYMENT_TARGET = 14.0; ONLY_ACTIVE_ARCH = YES; PRODUCT_BUNDLE_IDENTIFIER = com.mesteriis.CodexAuthBarTests; PRODUCT_MODULE_NAME = CodexAuthBarTests; PRODUCT_NAME = "$(TARGET_NAME)"; SWIFT_VERSION = 6.0; TEST_HOST = "$(BUILT_PRODUCTS_DIR)/CodexAuthBar.app/Contents/MacOS/CodexAuthBar";}; name = Debug; };
 		810000000000000000000006 = {isa = XCBuildConfiguration; buildSettings = {BUNDLE_LOADER = "$(TEST_HOST)"; CODE_SIGN_STYLE = Automatic; GENERATE_INFOPLIST_FILE = YES; MACOSX_DEPLOYMENT_TARGET = 14.0; PRODUCT_BUNDLE_IDENTIFIER = com.mesteriis.CodexAuthBarTests; PRODUCT_MODULE_NAME = CodexAuthBarTests; PRODUCT_NAME = "$(TARGET_NAME)"; SWIFT_VERSION = 6.0; TEST_HOST = "$(BUILT_PRODUCTS_DIR)/CodexAuthBar.app/Contents/MacOS/CodexAuthBar";}; name = Release; };
 		810000000000000000000007 = {isa = XCBuildConfiguration; buildSettings = {CODE_SIGN_STYLE = Automatic; GENERATE_INFOPLIST_FILE = YES; MACOSX_DEPLOYMENT_TARGET = 14.0; ONLY_ACTIVE_ARCH = YES; PRODUCT_BUNDLE_IDENTIFIER = com.mesteriis.CodexAuthBarUITests; PRODUCT_MODULE_NAME = CodexAuthBarUITests; PRODUCT_NAME = "$(TARGET_NAME)"; SWIFT_VERSION = 6.0; TEST_TARGET_NAME = CodexAuthBar;}; name = Debug; };
@@ -101,7 +103,7 @@
 /* End XCConfigurationList section */
 
 /* Begin XCLocalSwiftPackageReference section */
-		900000000000000000000001 = {isa = XCLocalSwiftPackageReference; relativePath = Packages/CodexAuthCore; };
+		900000000000000000000001 = {isa = XCLocalSwiftPackageReference; relativePath = src/Packages/CodexAuthCore; };
 /* End XCLocalSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */

@@ -2,6 +2,7 @@
 set -euo pipefail
 
 VERSION="${1#v}"
+MARKETING_VERSION="${VERSION%%-*}"
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 DIST="$ROOT/dist"
 KEYCHAIN="$RUNNER_TEMP/codex-auth-bar.keychain-db"
@@ -17,6 +18,7 @@ mkdir -p "$DIST"
 security create-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN"
 security set-keychain-settings -lut 21600 "$KEYCHAIN"
 security unlock-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN"
+security list-keychains -d user -s "$KEYCHAIN"
 base64 -D <<<"$DEVELOPER_ID_APPLICATION_P12_BASE64" >"$RUNNER_TEMP/developer-id.p12"
 security import "$RUNNER_TEMP/developer-id.p12" -k "$KEYCHAIN" -P "$DEVELOPER_ID_APPLICATION_P12_PASSWORD" -T /usr/bin/codesign
 security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "$KEYCHAIN_PASSWORD" "$KEYCHAIN"
@@ -24,14 +26,18 @@ security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "$KEYCHAIN
 xcodebuild archive -project "$ROOT/CodexAuthBar.xcodeproj" -scheme CodexAuthBar \
   -configuration Release -destination 'generic/platform=macOS' -archivePath "$ARCHIVE" \
   ARCHS='arm64 x86_64' ONLY_ACTIVE_ARCH=NO DEVELOPMENT_TEAM="$DEVELOPMENT_TEAM" \
-  CODE_SIGN_IDENTITY="$SIGNING_IDENTITY" MARKETING_VERSION="$VERSION"
+  CODE_SIGN_IDENTITY="$SIGNING_IDENTITY" MARKETING_VERSION="$MARKETING_VERSION"
 
 APP="$ARCHIVE/Products/Applications/CodexAuthBar.app"
+ARCHS="$(lipo -archs "$APP/Contents/MacOS/CodexAuthBar")"
+test "$ARCHS" = "x86_64 arm64" || test "$ARCHS" = "arm64 x86_64"
 codesign --verify --deep --strict --verbose=2 "$APP"
 ditto -c -k --keepParent "$APP" "$DIST/CodexAuthBar.zip"
 base64 -D <<<"$APPLE_API_KEY_P8_BASE64" >"$RUNNER_TEMP/AuthKey_$APPLE_API_KEY_ID.p8"
 xcrun notarytool submit "$DIST/CodexAuthBar.zip" --key "$RUNNER_TEMP/AuthKey_$APPLE_API_KEY_ID.p8" --key-id "$APPLE_API_KEY_ID" --issuer "$APPLE_API_ISSUER_ID" --wait
 xcrun stapler staple "$APP"
+xcrun stapler validate "$APP"
+spctl --assess --type execute --verbose=2 "$APP"
 
 STAGE="$DIST/dmg"
 mkdir -p "$STAGE"

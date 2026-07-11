@@ -1,0 +1,1296 @@
+{
+  "sourceLanguage" : "en",
+  "strings" : {
+    "%arg%%" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%arg%%"
+          }
+        }
+      }
+    },
+    "5h remaining" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Осталось на 5 часов"
+          }
+        }
+      }
+    },
+    "5h threshold" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Порог 5 часов"
+          }
+        }
+      }
+    },
+    "API key" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "API-ключ"
+          }
+        }
+      }
+    },
+    "API key…" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "API-ключ…"
+          }
+        }
+      }
+    },
+    "Access tokens are sent only to chatgpt.com. These backend endpoints are unofficial and may change." : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Токены доступа отправляются только на chatgpt.com. Эти backend endpoints неофициальны и могут измениться."
+          }
+        }
+      }
+    },
+    "Account ID" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ID аккаунта"
+          }
+        }
+      }
+    },
+    "Account key" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ключ аккаунта"
+          }
+        }
+      }
+    },
+    "Accounts" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Аккаунты"
+          }
+        }
+      }
+    },
+    "Actions" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Действия"
+          }
+        }
+      }
+    },
+    "Active via API" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Активный через API"
+          }
+        }
+      }
+    },
+    "Add" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Добавить"
+          }
+        }
+      }
+    },
+    "Add API key account" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Добавить аккаунт с API-ключом"
+          }
+        }
+      }
+    },
+    "Add or import an account" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Добавьте или импортируйте аккаунт"
+          }
+        }
+      }
+    },
+    "Alias" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Псевдоним"
+          }
+        }
+      }
+    },
+    "All via API" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Все через API"
+          }
+        }
+      }
+    },
+    "Authentication" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Аутентификация"
+          }
+        }
+      }
+    },
+    "Automatic switching" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Автопереключение"
+          }
+        }
+      }
+    },
+    "Base config" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Базовый config"
+          }
+        }
+      }
+    },
+    "Browser login" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Вход через браузер"
+          }
+        }
+      }
+    },
+    "CPA export skips API-key records. The default destination is CODEX_HOME/accounts/backup." : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "При экспорте CPA записи с API-ключами пропускаются. Папка по умолчанию: CODEX_HOME/accounts/backup."
+          }
+        }
+      }
+    },
+    "Cancel" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Отмена"
+          }
+        }
+      }
+    },
+    "Cancel login" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Отменить вход"
+          }
+        }
+      }
+    },
+    "Changes to CODEX_HOME take effect after restarting Codex Auth Bar." : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Изменение CODEX_HOME вступит в силу после перезапуска Codex Auth Bar."
+          }
+        }
+      }
+    },
+    "Choose executable…" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Выбрать исполняемый файл…"
+          }
+        }
+      }
+    },
+    "Choose…" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Выбрать…"
+          }
+        }
+      }
+    },
+    "Clean" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Очистить"
+          }
+        }
+      }
+    },
+    "Clean managed files?" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Очистить управляемые файлы?"
+          }
+        }
+      }
+    },
+    "Clean stale managed files…" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Очистить устаревшие файлы…"
+          }
+        }
+      }
+    },
+    "Close" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Закрыть"
+          }
+        }
+      }
+    },
+    "Codex Auth Bar" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Codex Auth Bar"
+          }
+        }
+      }
+    },
+    "Codex CLI" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Codex CLI"
+          }
+        }
+      }
+    },
+    "Codex CLI path" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Путь к Codex CLI"
+          }
+        }
+      }
+    },
+    "Codex Diagnostics" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Диагностика Codex"
+          }
+        }
+      }
+    },
+    "Codex diagnostics" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Диагностика Codex"
+          }
+        }
+      }
+    },
+    "Codex login" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Вход в Codex"
+          }
+        }
+      }
+    },
+    "Copy" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Скопировать"
+          }
+        }
+      }
+    },
+    "Copy command" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Скопировать команду"
+          }
+        }
+      }
+    },
+    "Create" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Создать"
+          }
+        }
+      }
+    },
+    "Credits" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Кредиты"
+          }
+        }
+      }
+    },
+    "Current Codex home" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Текущий CODEX_HOME"
+          }
+        }
+      }
+    },
+    "Custom CODEX_HOME" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Свой CODEX_HOME"
+          }
+        }
+      }
+    },
+    "Custom executable" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Свой исполняемый файл"
+          }
+        }
+      }
+    },
+    "Custom executables are user-trusted and are not covered by the pinned manifest verification." : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Пользователь доверяет выбранному исполняемому файлу; проверка закреплённого manifest на него не распространяется."
+          }
+        }
+      }
+    },
+    "Delete" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Удалить"
+          }
+        }
+      }
+    },
+    "Delete profile?" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Удалить профиль?"
+          }
+        }
+      }
+    },
+    "Device code, import, or API key…" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Код устройства, импорт или API-ключ…"
+          }
+        }
+      }
+    },
+    "Device-code login" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Вход по коду устройства"
+          }
+        }
+      }
+    },
+    "Display" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Отображение"
+          }
+        }
+      }
+    },
+    "Email" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Почта"
+          }
+        }
+      }
+    },
+    "Enable auto-switch monitoring" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Включить автопереключение"
+          }
+        }
+      }
+    },
+    "Experimental" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Экспериментальное"
+          }
+        }
+      }
+    },
+    "Export" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Экспорт"
+          }
+        }
+      }
+    },
+    "Export CPA…" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Экспорт CPA…"
+          }
+        }
+      }
+    },
+    "Export standard…" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Стандартный экспорт…"
+          }
+        }
+      }
+    },
+    "Follow the browser or device-code instructions below. Closing this window does not cancel an active Codex login." : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Следуйте инструкциям браузера или кода устройства ниже. Закрытие окна не отменяет активный вход в Codex."
+          }
+        }
+      }
+    },
+    "General" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Основные"
+          }
+        }
+      }
+    },
+    "Identity" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Идентификаторы"
+          }
+        }
+      }
+    },
+    "Import" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Импорт"
+          }
+        }
+      }
+    },
+    "Import auth file, JSON array, or folder…" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Импорт auth-файла, JSON-массива или папки…"
+          }
+        }
+      }
+    },
+    "Import/Export" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Импорт/Экспорт"
+          }
+        }
+      }
+    },
+    "Install pinned codext and launch Codex" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Установить закреплённый codext и запустить Codex"
+          }
+        }
+      }
+    },
+    "Install verified codext and launch Codex" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Установить проверенный codext и запустить Codex"
+          }
+        }
+      }
+    },
+    "Interrupted switch" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Прерванное переключение"
+          }
+        }
+      }
+    },
+    "Known old or new auth hashes are reconciled. An unknown externally modified auth.json is never overwritten." : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Известные старые и новые хеши auth согласуются. Неизвестный внешне изменённый auth.json никогда не перезаписывается."
+          }
+        }
+      }
+    },
+    "Last report" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Последний отчёт"
+          }
+        }
+      }
+    },
+    "Launch" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Запустить"
+          }
+        }
+      }
+    },
+    "Launch CLI" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Запустить CLI"
+          }
+        }
+      }
+    },
+    "Launch at login" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Запускать при входе"
+          }
+        }
+      }
+    },
+    "Launch with diagnostics…" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Запустить с диагностикой…"
+          }
+        }
+      }
+    },
+    "Legacy maintenance" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Обслуживание legacy"
+          }
+        }
+      }
+    },
+    "Local only" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Только локально"
+          }
+        }
+      }
+    },
+    "Manage…" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Управление…"
+          }
+        }
+      }
+    },
+    "Name" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Имя"
+          }
+        }
+      }
+    },
+    "No active account" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Нет активного аккаунта"
+          }
+        }
+      }
+    },
+    "Only recognized stale snapshots and excess managed backups are eligible. The export backup directory is preserved." : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Удаляются только распознанные устаревшие снимки и лишние управляемые копии. Папка экспорта сохраняется."
+          }
+        }
+      }
+    },
+    "Open" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Открыть"
+          }
+        }
+      }
+    },
+    "Open in default editor" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Открыть в редакторе"
+          }
+        }
+      }
+    },
+    "Path to codext" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Путь к codext"
+          }
+        }
+      }
+    },
+    "Pinned to codext-v0.144.1-a8c9398. HTTPS origin, archive contents, size, and SHA-256 are verified before installation." : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Закреплена версия codext-v0.144.1-a8c9398. Перед установкой проверяются HTTPS-источник, содержимое и размер архива, а также SHA-256."
+          }
+        }
+      }
+    },
+    "Pinned to codext-v0.144.1-a8c9398. The archive is accepted only when its SHA-256 matches the bundled manifest." : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Закреплена версия codext-v0.144.1-a8c9398. Архив принимается только при совпадении SHA-256 со встроенным manifest."
+          }
+        }
+      }
+    },
+    "Plan" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Тариф"
+          }
+        }
+      }
+    },
+    "Previous" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Предыдущий"
+          }
+        }
+      }
+    },
+    "Profile" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Профиль"
+          }
+        }
+      }
+    },
+    "Profiles" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Профили"
+          }
+        }
+      }
+    },
+    "Profiles affect only CLI sessions launched from Codex Auth Bar. Codex Desktop continues to use base config.toml." : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Профили влияют только на CLI-сессии, запущенные из Codex Auth Bar. Codex Desktop продолжает использовать базовый config.toml."
+          }
+        }
+      }
+    },
+    "Quit" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Выйти"
+          }
+        }
+      }
+    },
+    "Rebuild" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Пересобрать"
+          }
+        }
+      }
+    },
+    "Rebuild account registry?" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Пересобрать реестр аккаунтов?"
+          }
+        }
+      }
+    },
+    "Rebuild registry from snapshots…" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Пересобрать реестр из снимков…"
+          }
+        }
+      }
+    },
+    "Recovery" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Восстановление"
+          }
+        }
+      }
+    },
+    "Refresh" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Обновить"
+          }
+        }
+      }
+    },
+    "Refresh every %arg seconds" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Обновлять каждые %arg секунд"
+          }
+        }
+      }
+    },
+    "Registry metadata will be rebuilt from the newest valid managed snapshots and backups." : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Метаданные реестра будут пересобраны из самых новых валидных снимков и резервных копий."
+          }
+        }
+      }
+    },
+    "Registry recovery" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Восстановление реестра"
+          }
+        }
+      }
+    },
+    "Remove" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Удалить"
+          }
+        }
+      }
+    },
+    "Remove Loongphy auto-switch LaunchAgent…" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Удалить LaunchAgent автопереключения Loongphy…"
+          }
+        }
+      }
+    },
+    "Remove account?" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Удалить аккаунт?"
+          }
+        }
+      }
+    },
+    "Remove legacy LaunchAgent?" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Удалить старый LaunchAgent?"
+          }
+        }
+      }
+    },
+    "Rename" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Переименовать"
+          }
+        }
+      }
+    },
+    "Reset credits" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Сбросить кредиты"
+          }
+        }
+      }
+    },
+    "Reveal in Finder" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Показать в Finder"
+          }
+        }
+      }
+    },
+    "Run transaction recovery" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Запустить восстановление транзакции"
+          }
+        }
+      }
+    },
+    "Save alias" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Сохранить псевдоним"
+          }
+        }
+      }
+    },
+    "Search accounts" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Поиск аккаунтов"
+          }
+        }
+      }
+    },
+    "Security and API disclosure" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Безопасность и использование API"
+          }
+        }
+      }
+    },
+    "Select an account" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Выберите аккаунт"
+          }
+        }
+      }
+    },
+    "Settings…" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Настройки…"
+          }
+        }
+      }
+    },
+    "Standard Codex auth and CPA JSON are detected automatically. Batch errors are reported without discarding successful entries." : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Стандартный Codex auth и CPA JSON определяются автоматически. Ошибки пакета отображаются без потери успешно импортированных записей."
+          }
+        }
+      }
+    },
+    "Switch & Restart" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Переключить и перезапустить"
+          }
+        }
+      }
+    },
+    "Switch only" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Только переключить"
+          }
+        }
+      }
+    },
+    "Switch to %arg" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Переключиться на %arg"
+          }
+        }
+      }
+    },
+    "The key is passed to Codex through standard input and is never placed in command arguments or logs." : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ключ передаётся Codex через стандартный ввод и никогда не помещается в аргументы команды или логи."
+          }
+        }
+      }
+    },
+    "The managed auth snapshot and matching account record will be deleted." : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Управляемый снимок auth и соответствующая запись аккаунта будут удалены."
+          }
+        }
+      }
+    },
+    "The selected .config.toml profile will be deleted. Base config.toml is never changed." : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Выбранный профиль .config.toml будет удалён. Базовый config.toml не изменяется."
+          }
+        }
+      }
+    },
+    "This action is never run automatically." : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Это действие никогда не выполняется автоматически."
+          }
+        }
+      }
+    },
+    "Tokens, JWTs, and API keys are redacted before this output is displayed." : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Перед показом токены, JWT и API-ключи скрываются."
+          }
+        }
+      }
+    },
+    "Unknown" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Неизвестно"
+          }
+        }
+      }
+    },
+    "Unloads and removes only com.loongphy.codex-auth.auto.plist." : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Выгружается и удаляется только com.loongphy.codex-auth.auto.plist."
+          }
+        }
+      }
+    },
+    "Usage" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Лимиты"
+          }
+        }
+      }
+    },
+    "Usage API" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "API лимитов"
+          }
+        }
+      }
+    },
+    "Use default" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "По умолчанию"
+          }
+        }
+      }
+    },
+    "Use remote usage and workspace APIs" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Использовать удалённые API лимитов и workspace"
+          }
+        }
+      }
+    },
+    "User ID" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ID пользователя"
+          }
+        }
+      }
+    },
+    "Verified codext" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Проверенный codext"
+          }
+        }
+      }
+    },
+    "Weekly" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Неделя"
+          }
+        }
+      }
+    },
+    "Weekly remaining" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Осталось на неделю"
+          }
+        }
+      }
+    },
+    "Weekly threshold" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Недельный порог"
+          }
+        }
+      }
+    },
+    "Workspace" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Workspace"
+          }
+        }
+      }
+    }
+  },
+  "version" : "1.0"
+}

@@ -28,9 +28,15 @@ independent Swift implementation and is not affiliated with OpenAI or Loongphy.
 ## Build
 
 ```bash
-swift test --package-path Packages/CodexAuthCore
+swift test --package-path src/Packages/CodexAuthCore
+xcodebuild test -project CodexAuthBar.xcodeproj -scheme CodexAuthBar \
+  -destination 'platform=macOS' CODE_SIGNING_ALLOWED=NO
+xcodebuild analyze -project CodexAuthBar.xcodeproj -scheme CodexAuthBar \
+  CODE_SIGNING_ALLOWED=NO
 ./script/build_and_run.sh --verify
 ```
+
+All Swift application, package, and test source is stored under `src/`.
 
 The app intentionally runs without App Sandbox because it manages
 `~/.codex/auth.json`, starts the Codex CLI, and restarts the Codex desktop app.
@@ -52,11 +58,16 @@ These ChatGPT backend endpoints are unofficial and may change. Remote refresh
 can be disabled in Settings. The app has no analytics, telemetry service, or
 external backend.
 
+See [docs/security.md](docs/security.md) for recovery, custom `CODEX_HOME`,
+remote API, plaintext credential, and experimental codext trust boundaries.
+
 ## Distribution
 
 Unsigned CI builds are for testing only. A public release must be signed with a
 Developer ID certificate, notarized, and stapled. The repository intentionally
 does not publish unsigned GitHub Releases.
+
+Mac App Store distribution and App Sandbox are not supported in v1.
 
 ## License
 
