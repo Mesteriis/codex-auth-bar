@@ -3,6 +3,71 @@ import XCTest
 @testable import CodexAuthBar
 
 final class CodexAuthBarTests: XCTestCase {
+    func testAutomaticWidgetReloadsAreCoalescedForFifteenMinutes() async throws {
+        let store = RecordingWidgetStore()
+        let reloader = RecordingWidgetReloader()
+        let publisher = WidgetSnapshotPublisher(
+            store: store,
+            reloader: reloader,
+            fallbackName: { "Account \($0)" }
+        )
+
+        try await publisher.publish(
+            registry: syntheticWidgetRegistry(alias: "First"),
+            reason: .automatic,
+            now: Date(timeIntervalSince1970: 0)
+        )
+        try await publisher.publish(
+            registry: syntheticWidgetRegistry(alias: "Second"),
+            reason: .automatic,
+            now: Date(timeIntervalSince1970: 14 * 60)
+        )
+        try await publisher.publish(
+            registry: syntheticWidgetRegistry(alias: "Third"),
+            reason: .automatic,
+            now: Date(timeIntervalSince1970: 15 * 60)
+        )
+
+        let reloadCount = await reloader.reloadCount
+        let writeCount = await store.writeCount
+        XCTAssertEqual(reloadCount, 2)
+        XCTAssertEqual(writeCount, 3)
+    }
+
+    func testManualRefreshReloadsAndAdvancesFreshnessEvenWhenValuesMatch() async throws {
+        let store = RecordingWidgetStore()
+        let reloader = RecordingWidgetReloader()
+        let publisher = WidgetSnapshotPublisher(
+            store: store,
+            reloader: reloader,
+            fallbackName: { "Account \($0)" }
+        )
+        let registry = syntheticWidgetRegistry(alias: "Personal")
+
+        try await publisher.publish(
+            registry: registry,
+            reason: .manualRefresh,
+            now: Date(timeIntervalSince1970: 0)
+        )
+        try await publisher.publish(
+            registry: registry,
+            reason: .manualRefresh,
+            now: Date(timeIntervalSince1970: 60)
+        )
+
+        let writeCount = await store.writeCount
+        let reloadCount = await reloader.reloadCount
+        XCTAssertEqual(writeCount, 2)
+        XCTAssertEqual(reloadCount, 2)
+    }
+
+    func testWidgetDeepLinkAcceptsOnlyAccountsRoute() {
+        XCTAssertEqual(WidgetDeepLink(URL(string: "codexauthbar://accounts")!), .accounts)
+        XCTAssertNil(WidgetDeepLink(URL(string: "https://example.com")!))
+        XCTAssertNil(WidgetDeepLink(URL(string: "codexauthbar://switch/account")!))
+        XCTAssertNil(WidgetDeepLink(URL(string: "codexauthbar://accounts?account=secret")!))
+    }
+
     func testApplicationBundleIdentifierContract() {
         XCTAssertEqual(Bundle.main.bundleIdentifier, "com.mesteriis.CodexAuthBar")
         XCTAssertEqual(Bundle.main.object(forInfoDictionaryKey: "LSUIElement") as? Bool, true)
@@ -99,6 +164,35 @@ final class CodexAuthBarTests: XCTestCase {
             XCTFail("Unexpected error: \(error)")
         }
     }
+}
+
+private actor RecordingWidgetStore: WidgetSnapshotWriting {
+    private(set) var writeCount = 0
+
+    func writeSnapshot(_ snapshot: WidgetSnapshot) async throws {
+        writeCount += 1
+    }
+}
+
+private actor RecordingWidgetReloader: WidgetTimelineReloading {
+    private(set) var reloadCount = 0
+
+    func reload() async {
+        reloadCount += 1
+    }
+}
+
+private func syntheticWidgetRegistry(alias: String) -> RegistryV4 {
+    let account = AccountRecord(
+        accountKey: AccountKey("synthetic-user::synthetic-account"),
+        chatGPTAccountID: "synthetic-account",
+        chatGPTUserID: "synthetic-user",
+        email: "person@example.com",
+        alias: alias,
+        plan: .pro,
+        authMode: .chatgpt
+    )
+    return RegistryV4(activeAccountKey: account.accountKey, accounts: [account])
 }
 
 private struct LoginFixture {

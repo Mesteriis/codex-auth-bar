@@ -42,6 +42,7 @@ final class AppModel {
     private let profileStore: ProfileStore
     private let usageService: ChatGPTUsageService
     private let processController: CodexProcessController
+    private let widgetPublisher: WidgetSnapshotPublisher?
     private let codextManager = CodextManager()
     private var lastAutoSwitchActiveRefresh = Date.distantPast
     private var fileWatcher: DirectoryWatcher?
@@ -58,6 +59,17 @@ final class AppModel {
         profileStore = ProfileStore(home: home)
         usageService = ChatGPTUsageService(home: home)
         processController = CodexProcessController(home: home)
+        if let containerURL = FileManager.default.containerURL(
+            forSecurityApplicationGroupIdentifier: CodexWidgetContract.appGroup
+        ) {
+            widgetPublisher = WidgetSnapshotPublisher(
+                store: WidgetSnapshotStore(containerURL: containerURL),
+                fallbackName: { "Account \($0)" }
+            )
+        } else {
+            widgetPublisher = nil
+            Self.lifecycleLogger.notice("widget_container_unavailable")
+        }
         if let raw = UserDefaults.standard.string(forKey: "selectedProfile") { selectedProfile = ProfileName(raw) }
         Task { await start() }
     }
@@ -77,7 +89,7 @@ final class AppModel {
         var recoveryError: String?
         do { recoveryResult = try await RegistryStore(home: home).recoverPendingTransaction() }
         catch { recoveryError = "Recovery: \(error.localizedDescription)" }
-        await reload()
+        await reload(widgetReason: .startup)
         if let capabilities = try? await processController.capabilities() {
             supportsProfiles = capabilities.supportsProfiles
         }
@@ -91,17 +103,18 @@ final class AppModel {
         do {
             try FileManager.default.createDirectory(at: home.accounts, withIntermediateDirectories: true)
             fileWatcher = try DirectoryWatcher(url: home.accounts) { [weak self] in
-                Task { @MainActor in await self?.reload() }
+                Task { @MainActor in await self?.reload(widgetReason: .automatic) }
             }
         } catch { errorMessage = error.localizedDescription }
         Task { await autoSwitchLoop() }
     }
 
-    func reload() async {
+    func reload(widgetReason: WidgetPublishReason = .automatic) async {
         isLoading = true
         defer { isLoading = false }
+        let state: AccountState
         do {
-            let state = try await repository.state(refresh: .stored)
+            state = try await repository.state(refresh: .stored)
             accounts = state.registry.accounts.sorted { $0.displayName.localizedStandardCompare($1.displayName) == .orderedAscending }
             activeAccountKey = state.registry.activeAccountKey
             previousAccountKey = state.registry.previousActiveAccountKey
@@ -110,7 +123,9 @@ final class AppModel {
             errorMessage = nil
         } catch {
             errorMessage = error.localizedDescription
+            return
         }
+        try? await widgetPublisher?.publish(registry: state.registry, reason: widgetReason)
     }
 
     func switchAccount(_ key: AccountKey, restart: Bool = true) async {
@@ -133,7 +148,7 @@ final class AppModel {
                 if recovery == .registryReconciled {
                     statusMessage = "Recovered and completed the interrupted account switch"
                     Self.switchLogger.notice("Switch completed through transaction recovery")
-                    await reload()
+                    await reload(widgetReason: .structural)
                     return
                 }
                 throw error
@@ -141,7 +156,7 @@ final class AppModel {
             if restart, wasRunning { try await processController.launchDesktopApp(CodexLaunchRequest(codexHome: home.root)) }
             statusMessage = restart && wasRunning ? "Switched and restarted Codex" : "Account switched"
             Self.switchLogger.notice("Switch completed; desktop restarted: \(restart && wasRunning, privacy: .public)")
-            await reload()
+            await reload(widgetReason: .structural)
         } catch {
             if case ProcessError.incompatibleCredentialStore = error {
                 requiresFileCredentialStore = true
@@ -264,7 +279,7 @@ final class AppModel {
                 ? "Usage refreshed"
                 : "Usage refreshed with: \(Dictionary(grouping: failures, by: { $0 }).map { "\($0.key) ×\($0.value.count)" }.sorted().joined(separator: ", "))"
         }
-        await reload()
+        await reload(widgetReason: .manualRefresh)
     }
 
     func importFile(_ url: URL, format: ImportFormat = .automatic) async {
@@ -274,7 +289,7 @@ final class AppModel {
             operationReport = report.events.map {
                 "\($0.outcome.rawValue)\t\($0.source)\t\($0.detail)"
             }.joined(separator: "\n")
-            await reload()
+            await reload(widgetReason: .structural)
         } catch { errorMessage = error.localizedDescription }
     }
 
@@ -295,7 +310,7 @@ final class AppModel {
             let report = try await repository.clean()
             statusMessage = "Cleaned \(report.deletedFiles.count) stale file(s)"
             operationReport = report.deletedFiles.isEmpty ? "No stale files found." : report.deletedFiles.joined(separator: "\n")
-            await reload()
+            await reload(widgetReason: .structural)
         } catch { errorMessage = error.localizedDescription }
     }
 
@@ -303,7 +318,7 @@ final class AppModel {
         do {
             let result = try await RegistryStore(home: home).recoverPendingTransaction()
             statusMessage = "Recovery result: \(String(describing: result))"
-            await reload()
+            await reload(widgetReason: .structural)
         } catch { errorMessage = error.localizedDescription }
     }
 
@@ -311,12 +326,12 @@ final class AppModel {
         do {
             let report = try await repository.remove([key])
             operationReport = "Removed: \(report.removedAccountKeys.map(\.rawValue).joined(separator: ", "))\nPromoted: \(report.promotedAccountKey?.rawValue ?? "none")"
-            await reload()
+            await reload(widgetReason: .structural)
         } catch { errorMessage = error.localizedDescription }
     }
 
     func updateAlias(_ alias: String, for key: AccountKey) async {
-        do { try await repository.setAlias(alias, for: key); await reload() } catch { errorMessage = error.localizedDescription }
+        do { try await repository.setAlias(alias, for: key); await reload(widgetReason: .structural) } catch { errorMessage = error.localizedDescription }
     }
 
     func chooseProfile(_ profile: ProfileName?) {
@@ -347,7 +362,7 @@ final class AppModel {
         do {
             try await profileStore.rename(profile, to: newName)
             if selectedProfile == profile { chooseProfile(newName) }
-            await reload()
+            await reload(widgetReason: .structural)
         } catch { errorMessage = error.localizedDescription }
     }
 
@@ -355,7 +370,7 @@ final class AppModel {
         do {
             try await profileStore.delete(profile)
             if selectedProfile == profile { chooseProfile(nil) }
-            await reload()
+            await reload(widgetReason: .structural)
         } catch { errorMessage = error.localizedDescription }
     }
 
@@ -415,7 +430,7 @@ final class AppModel {
             }
             defer { try? FileManager.default.removeItem(at: artifact.authURL) }
             _ = try await repository.importAccounts(ImportRequest(source: artifact.authURL, activate: true))
-            await reload()
+            await reload(widgetReason: .structural)
         } catch { errorMessage = error.localizedDescription }
     }
 
@@ -426,7 +441,7 @@ final class AppModel {
             defer { try? FileManager.default.removeItem(at: artifact.authURL) }
             _ = try await repository.importAccounts(ImportRequest(source: artifact.authURL, activate: true))
             statusMessage = "API key account added"
-            await reload()
+            await reload(widgetReason: .structural)
         } catch { errorMessage = error.localizedDescription }
     }
 
@@ -470,14 +485,14 @@ final class AppModel {
             let interval = storedInterval == 0 ? 60 : max(5, storedInterval)
             try? await Task.sleep(for: .seconds(interval))
             guard UserDefaults.standard.bool(forKey: "autoSwitchEnabled") else { continue }
-            await reload()
+            await reload(widgetReason: .automatic)
             let remoteEnabled = UserDefaults.standard.object(forKey: "apiRefreshEnabled") as? Bool ?? true
             if remoteEnabled, Date().timeIntervalSince(lastAutoSwitchActiveRefresh) >= 60,
                let active = activeAccount
             {
                 await refreshAccountSilently(active)
                 lastAutoSwitchActiveRefresh = .now
-                await reload()
+                await reload(widgetReason: .automatic)
             }
             if remoteEnabled {
                 let staleBefore = Int64(Date().timeIntervalSince1970) - 60
@@ -486,7 +501,7 @@ final class AppModel {
                     .first(where: { ($0.lastUsageAt ?? .min) < staleBefore })
                 {
                     await refreshAccountSilently(stale)
-                    await reload()
+                    await reload(widgetReason: .automatic)
                 }
             }
             let thresholds = AutoSwitchThresholds(
@@ -499,7 +514,7 @@ final class AppModel {
                 for candidate in AutoSwitchPolicy().rankedCandidates(registry: registry).prefix(3) {
                     await refreshAccountSilently(candidate)
                 }
-                await reload()
+                await reload(widgetReason: .automatic)
                 registry = RegistryV4(activeAccountKey: activeAccountKey, accounts: accounts)
             }
             guard let decision = AutoSwitchPolicy().decision(registry: registry, thresholds: thresholds) else { continue }

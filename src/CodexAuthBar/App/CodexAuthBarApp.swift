@@ -44,11 +44,17 @@ final class AppDelegate: NSObject, NSApplicationDelegate, @preconcurrency UNUser
 @main
 struct CodexAuthBarApp: App {
     @NSApplicationDelegateAdaptor(AppDelegate.self) private var appDelegate
+    @Environment(\.openWindow) private var openWindow
     @State private var model = AppModel()
 
     var body: some Scene {
         MenuBarExtra {
             MenuBarPopover(model: model)
+                .onOpenURL { url in
+                    guard WidgetDeepLink(url) == .accounts else { return }
+                    NSApp.activate(ignoringOtherApps: true)
+                    openWindow(id: "accounts")
+                }
         } label: {
             Label("Codex Auth Bar", systemImage: model.hasError ? "person.crop.circle.badge.exclamationmark" : "person.crop.circle")
                 .accessibilityLabel("Codex Auth Bar")
