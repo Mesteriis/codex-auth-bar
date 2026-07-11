@@ -24,6 +24,26 @@ enum WidgetPreviewHarness {
     static let unavailable = entry(remaining: nil)
     static let empty = CodexWidgetEntry(date: now, snapshot: nil, loadState: .missing)
     static let stale = entry(freshnessAge: 86_400, count: 7)
+
+    @ViewBuilder
+    static func view(
+        family: WidgetFamily,
+        colorScheme: ColorScheme
+    ) -> some View {
+        Group {
+            switch family {
+            case .systemSmall:
+                SmallWidgetView(entry: healthy)
+            case .systemMedium:
+                MediumWidgetView(entry: healthy)
+            case .systemLarge:
+                LargeWidgetView(entry: healthy)
+            default:
+                SmallWidgetView(entry: healthy)
+            }
+        }
+        .preferredColorScheme(colorScheme)
+    }
 }
 
 #Preview("Small · Healthy", as: .systemSmall) {

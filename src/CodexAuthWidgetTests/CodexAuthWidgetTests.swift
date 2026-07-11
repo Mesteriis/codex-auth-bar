@@ -1,4 +1,7 @@
+import AppKit
 import CodexAuthCore
+import SwiftUI
+import WidgetKit
 import XCTest
 
 final class CodexAuthWidgetTests: XCTestCase {
@@ -84,6 +87,41 @@ final class CodexAuthWidgetTests: XCTestCase {
         }
     }
 
+    @MainActor
+    func testRenderSmallPrecisionLedger() throws {
+        try assertRenderAttachment(for: .systemSmall, name: "widget-small-dark")
+    }
+
+    @MainActor
+    func testRenderMediumPrecisionLedger() throws {
+        try assertRenderAttachment(for: .systemMedium, name: "widget-medium-dark")
+    }
+
+    @MainActor
+    func testRenderLargePrecisionLedger() throws {
+        try assertRenderAttachment(for: .systemLarge, name: "widget-large-dark")
+    }
+
+    @MainActor
+    private func assertRenderAttachment(for family: WidgetFamily, name: String) throws {
+        let size = WidgetRenderFixture.size(for: family)
+        let view = WidgetPreviewHarness.view(family: family, colorScheme: .dark)
+        let renderer = ImageRenderer(content: view.frame(width: size.width, height: size.height))
+        renderer.scale = WidgetRenderFixture.scale
+
+        let image = try XCTUnwrap(renderer.nsImage)
+        let tiff = try XCTUnwrap(image.tiffRepresentation)
+        let png = try XCTUnwrap(
+            NSBitmapImageRep(data: tiff)?.representation(using: .png, properties: [:])
+        )
+        XCTAssertFalse(png.isEmpty)
+
+        let attachment = XCTAttachment(image: image)
+        attachment.name = name
+        attachment.lifetime = .keepAlways
+        add(attachment)
+    }
+
     private func widgetSnapshot(
         accountCount: Int = 1,
         resets: [Date] = []
@@ -106,5 +144,22 @@ final class CodexAuthWidgetTests: XCTestCase {
                 )
             }
         )
+    }
+}
+
+private enum WidgetRenderFixture {
+    static let scale: CGFloat = 2
+
+    static func size(for family: WidgetFamily) -> CGSize {
+        switch family {
+        case .systemSmall:
+            CGSize(width: 158, height: 158)
+        case .systemMedium:
+            CGSize(width: 338, height: 158)
+        case .systemLarge:
+            CGSize(width: 338, height: 354)
+        default:
+            CGSize(width: 158, height: 158)
+        }
     }
 }

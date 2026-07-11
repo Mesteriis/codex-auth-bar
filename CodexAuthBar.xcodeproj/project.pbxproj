@@ -28,6 +28,12 @@
 		100000000000000000000014 /* WidgetEntry.swift in Sources */ = {isa = PBXBuildFile; fileRef = 200000000000000000000018 /* WidgetEntry.swift */; };
 		100000000000000000000015 /* WidgetTimelineProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 200000000000000000000019 /* WidgetTimelineProvider.swift */; };
 		100000000000000000000016 /* CodexAuthWidgetTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 20000000000000000000001A /* CodexAuthWidgetTests.swift */; };
+		100000000000000000000024 /* CodexAuthWidgetBundle.swift in Widget Tests */ = {isa = PBXBuildFile; fileRef = 200000000000000000000012 /* CodexAuthWidgetBundle.swift */; };
+		100000000000000000000025 /* CodexAuthWidgetView.swift in Widget Tests */ = {isa = PBXBuildFile; fileRef = 20000000000000000000001D /* CodexAuthWidgetView.swift */; };
+		100000000000000000000026 /* SmallWidgetView.swift in Widget Tests */ = {isa = PBXBuildFile; fileRef = 20000000000000000000001E /* SmallWidgetView.swift */; };
+		100000000000000000000027 /* MediumWidgetView.swift in Widget Tests */ = {isa = PBXBuildFile; fileRef = 20000000000000000000001F /* MediumWidgetView.swift */; };
+		100000000000000000000028 /* LargeWidgetView.swift in Widget Tests */ = {isa = PBXBuildFile; fileRef = 200000000000000000000020 /* LargeWidgetView.swift */; };
+		100000000000000000000029 /* WidgetPreviewHarness.swift in Widget Tests */ = {isa = PBXBuildFile; fileRef = 200000000000000000000021 /* WidgetPreviewHarness.swift */; };
 		100000000000000000000017 /* CodexAuthCore in Frameworks */ = {isa = PBXBuildFile; productRef = 900000000000000000000004 /* CodexAuthCore */; };
 		100000000000000000000018 /* SwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 200000000000000000000014 /* SwiftUI.framework */; };
 		100000000000000000000019 /* WidgetKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 200000000000000000000015 /* WidgetKit.framework */; };
@@ -140,7 +146,7 @@
 		400000000000000000000006 = {isa = PBXSourcesBuildPhase; buildActionMask = 2147483647; files = (100000000000000000000008); runOnlyForDeploymentPostprocessing = 0; };
 		400000000000000000000008 = {isa = PBXSourcesBuildPhase; buildActionMask = 2147483647; files = (100000000000000000000009); runOnlyForDeploymentPostprocessing = 0; };
 		40000000000000000000000B = {isa = PBXSourcesBuildPhase; buildActionMask = 2147483647; files = (10000000000000000000000C /* CodexAuthWidgetBundle.swift in Sources */, 100000000000000000000014 /* WidgetEntry.swift in Sources */, 100000000000000000000015 /* WidgetTimelineProvider.swift in Sources */, 10000000000000000000001A /* LimitRing.swift in Sources */, 10000000000000000000001B /* CodexAuthWidgetView.swift in Sources */, 10000000000000000000001C /* SmallWidgetView.swift in Sources */, 10000000000000000000001D /* MediumWidgetView.swift in Sources */, 10000000000000000000001E /* LargeWidgetView.swift in Sources */, 10000000000000000000001F /* WidgetPreviewHarness.swift in Sources */,); runOnlyForDeploymentPostprocessing = 0; };
-		40000000000000000000000F = {isa = PBXSourcesBuildPhase; buildActionMask = 2147483647; files = (100000000000000000000016 /* CodexAuthWidgetTests.swift in Sources */, 100000000000000000000014 /* WidgetEntry.swift in Sources */, 100000000000000000000015 /* WidgetTimelineProvider.swift in Sources */, 10000000000000000000001A /* LimitRing.swift in Sources */,); runOnlyForDeploymentPostprocessing = 0; };
+		40000000000000000000000F = {isa = PBXSourcesBuildPhase; buildActionMask = 2147483647; files = (100000000000000000000016 /* CodexAuthWidgetTests.swift in Sources */, 100000000000000000000014 /* WidgetEntry.swift in Sources */, 100000000000000000000015 /* WidgetTimelineProvider.swift in Sources */, 10000000000000000000001A /* LimitRing.swift in Sources */, 100000000000000000000024 /* CodexAuthWidgetBundle.swift in Widget Tests */, 100000000000000000000025 /* CodexAuthWidgetView.swift in Widget Tests */, 100000000000000000000026 /* SmallWidgetView.swift in Widget Tests */, 100000000000000000000027 /* MediumWidgetView.swift in Widget Tests */, 100000000000000000000028 /* LargeWidgetView.swift in Widget Tests */, 100000000000000000000029 /* WidgetPreviewHarness.swift in Widget Tests */,); runOnlyForDeploymentPostprocessing = 0; };
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
