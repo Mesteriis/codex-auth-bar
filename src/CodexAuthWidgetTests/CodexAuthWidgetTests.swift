@@ -59,6 +59,11 @@ final class CodexAuthWidgetTests: XCTestCase {
         XCTAssertEqual(LimitSeverity(remaining: 9), .critical)
     }
 
+    func testLedgerContentUsesAProtectedHorizontalInset() {
+        XCTAssertEqual(WidgetLayoutMetrics.ledgerHorizontalInset, 12)
+        XCTAssertGreaterThan(WidgetLayoutMetrics.ledgerHorizontalInset, 0)
+    }
+
     func testAccessibilityValueIncludesNumberResetAndStaleness() {
         let value = LimitAccessibility.accountValue(fiveHourRemaining: 72, weeklyRemaining: nil, reset: Date(timeIntervalSince1970: 7_200), now: Date(timeIntervalSince1970: 0), freshness: .aging, locale: Locale(identifier: "en"))
         XCTAssertTrue(value.contains("72"))

@@ -23,6 +23,7 @@ struct LargeWidgetView: View {
                 }
             }
         }
+        .padding(.horizontal, WidgetLayoutMetrics.ledgerHorizontalInset)
     }
 }
 

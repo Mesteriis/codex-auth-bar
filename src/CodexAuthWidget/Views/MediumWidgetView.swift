@@ -15,6 +15,7 @@ struct MediumWidgetView: View {
                 }
             }
         }
+        .padding(.horizontal, WidgetLayoutMetrics.ledgerHorizontalInset)
     }
 }
 
