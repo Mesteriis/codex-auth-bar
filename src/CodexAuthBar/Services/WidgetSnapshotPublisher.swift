@@ -27,6 +27,11 @@ extension WidgetSnapshotStore: WidgetSnapshotWriting {
 }
 
 actor WidgetSnapshotPublisher {
+    private struct PendingReload {
+        let forcesReload: Bool
+        let enqueuedAt: Date
+    }
+
     static let automaticReloadInterval: TimeInterval = 15 * 60
 
     private let store: any WidgetSnapshotWriting
@@ -34,7 +39,7 @@ actor WidgetSnapshotPublisher {
     private let fallbackName: @Sendable (Int) -> String
     private var lastReload: Date?
     private var lastAccounts: [WidgetAccountSnapshot]?
-    private var reloadPending = false
+    private var pendingReload: PendingReload?
     private var reloadInProgress = false
 
     init(
@@ -53,21 +58,41 @@ actor WidgetSnapshotPublisher {
         if contentChanged || reason.forcesReload {
             try await store.writeSnapshot(snapshot)
             lastAccounts = snapshot.accounts
-            reloadPending = true
+            pendingReload = PendingReload(
+                forcesReload: reason.forcesReload || pendingReload?.forcesReload == true,
+                enqueuedAt: now
+            )
         }
 
-        guard reloadPending, !reloadInProgress else { return }
-        let elapsed = lastReload.map { now.timeIntervalSince($0) } ?? .infinity
-        guard reason.forcesReload || elapsed >= Self.automaticReloadInterval else { return }
+        guard !reloadInProgress else { return }
         reloadInProgress = true
-        do {
-            try await reloader.reload()
-            lastReload = now
-            reloadPending = false
-            reloadInProgress = false
-        } catch {
-            reloadInProgress = false
-            throw error
+        defer { reloadInProgress = false }
+        try await drainPendingReloads()
+    }
+
+    private func drainPendingReloads() async throws {
+        while let pending = pendingReload {
+            pendingReload = nil
+            let elapsed = lastReload.map { pending.enqueuedAt.timeIntervalSince($0) } ?? .infinity
+            guard pending.forcesReload || elapsed >= Self.automaticReloadInterval else {
+                pendingReload = pending
+                return
+            }
+
+            do {
+                try await reloader.reload()
+                lastReload = pending.enqueuedAt
+            } catch {
+                if let newerPending = pendingReload {
+                    pendingReload = PendingReload(
+                        forcesReload: pending.forcesReload || newerPending.forcesReload,
+                        enqueuedAt: min(pending.enqueuedAt, newerPending.enqueuedAt)
+                    )
+                } else {
+                    pendingReload = pending
+                }
+                throw error
+            }
         }
     }
 }

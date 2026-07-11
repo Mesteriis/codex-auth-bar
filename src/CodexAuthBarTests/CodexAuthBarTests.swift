@@ -96,6 +96,40 @@ final class CodexAuthBarTests: XCTestCase {
         try await second.value
     }
 
+    func testForcedPublishDuringReloadDrainsFollowUpReload() async throws {
+        let store = CoordinatedWidgetStore()
+        let reloader = BlockingWidgetReloader()
+        let publisher = WidgetSnapshotPublisher(
+            store: store,
+            reloader: reloader,
+            fallbackName: { "Account \($0)" }
+        )
+
+        let first = Task {
+            try await publisher.publish(
+                registry: syntheticWidgetRegistry(alias: "First"),
+                reason: .automatic,
+                now: Date(timeIntervalSince1970: 0)
+            )
+        }
+        await reloader.waitForFirstReload()
+
+        let second = Task {
+            try await publisher.publish(
+                registry: syntheticWidgetRegistry(alias: "Second"),
+                reason: .structural,
+                now: Date(timeIntervalSince1970: 1)
+            )
+        }
+        await store.waitForWriteCount(2)
+        await reloader.releaseFirstReload()
+        try await first.value
+        try await second.value
+
+        let reloadCount = await reloader.reloadCount
+        XCTAssertEqual(reloadCount, 2)
+    }
+
     func testAutomaticPublishRetriesAfterReloadFailureWithoutRewritingSnapshot() async throws {
         let store = RecordingWidgetStore()
         let reloader = FailingOnceWidgetReloader()
