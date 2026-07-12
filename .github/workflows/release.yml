@@ -40,4 +40,17 @@ jobs:
       - name: Publish
         env:
           GH_TOKEN: ${{ github.token }}
-        run: gh release create "$GITHUB_REF_NAME" dist/CodexAuthBar-*.dmg dist/CodexAuthBar-*.dmg.sha256 --generate-notes --verify-tag
+        run: |
+          release_args=()
+          if [[ "$GITHUB_REF_NAME" == *-rc.* ]]; then
+            release_args+=(--prerelease)
+          fi
+          if gh release view "$GITHUB_REF_NAME" >/dev/null 2>&1; then
+            gh release upload "$GITHUB_REF_NAME" \
+              dist/CodexAuthBar-*.dmg dist/CodexAuthBar-*.dmg.sha256 --clobber
+            gh release edit "$GITHUB_REF_NAME" --draft=false "${release_args[@]}"
+          else
+            gh release create "$GITHUB_REF_NAME" \
+              dist/CodexAuthBar-*.dmg dist/CodexAuthBar-*.dmg.sha256 \
+              --generate-notes --verify-tag "${release_args[@]}"
+          fi
