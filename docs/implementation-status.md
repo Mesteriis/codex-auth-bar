@@ -27,12 +27,15 @@ root because they are build and repository infrastructure rather than source.
 
 ## Release boundary
 
-Unsigned PR artifacts are named `CodexAuthBar-unsigned` and are never published
-as a GitHub Release. The protected GitHub `release` environment exists and the
-release workflow requires Apple signing/notarization secrets. No public release
-is created until those credentials are supplied; the first accepted public tag
-is `v0.1.0-rc.1`. This is the intended completion state before enrollment in the
-Apple Developer Program, not a bypass of the release gate.
+Unsigned PR artifacts are named `CodexAuthBar-unsigned` and remain CI-only. By
+an explicit maintainer decision, `v0.1.0-alpha.1` is a separately packaged,
+clearly labelled ad-hoc signed developer preview. It is not notarized and is not
+presented as a normal trusted macOS distribution.
+
+The protected GitHub `release` environment still governs `v0.1.0-rc.1` and
+later normal releases. That workflow requires Apple signing/notarization
+secrets, Developer ID signing, notarization, stapling, Gatekeeper assessment,
+and a published SHA-256 checksum.
 
 ## Validation commands
 

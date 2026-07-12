@@ -9,6 +9,7 @@ permissions:
 
 jobs:
   release:
+    if: ${{ !contains(github.ref_name, '-alpha.') }}
     runs-on: macos-15
     environment: release
     steps:

@@ -67,13 +67,15 @@ scheduling budget, so macOS can defer an update.
 
 ## Install
 
-The first public binary will be `v0.1.0-rc.1`. It will be available from
-[GitHub Releases](https://github.com/Mesteriis/codex-auth-bar/releases) as a
-universal Developer ID signed, notarized, and stapled DMG.
+The current [`v0.1.0-alpha.1`](https://github.com/Mesteriis/codex-auth-bar/releases/tag/v0.1.0-alpha.1)
+developer preview is available from GitHub Releases as a universal ad-hoc
+signed build. It is **not Developer ID signed or notarized**. macOS can require
+using **Open Anyway** in System Settings → Privacy & Security after the first
+launch attempt. Install it only if you accept this preview limitation.
 
-Until Apple signing credentials are configured, build from source. Unsigned CI
-artifacts are for development testing and are deliberately not published as
-releases.
+The first normal public binary will be `v0.1.0-rc.1`: a universal Developer ID
+signed, notarized, and stapled DMG. Regular unsigned CI artifacts remain for
+development testing only.
 
 ### Build from source
 

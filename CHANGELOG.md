@@ -4,6 +4,13 @@
 
 - No unreleased changes.
 
+## 0.1.0-alpha.1 — 2026-07-12
+
+- Published the first explicitly unsigned, ad-hoc signed developer preview for
+  installation testing on macOS 14+.
+- The preview is universal (`arm64 + x86_64`) and includes the WidgetKit
+  extension, but is not Developer ID signed or notarized.
+
 ## 0.1.0-rc.1 — pending Developer ID signing
 
 - Initial native Swift implementation of Codex Auth Bar.
