@@ -45,6 +45,7 @@ enum WidgetPreviewHarness {
     }
 
     @ViewBuilder
+    @MainActor
     static func view(
         family: WidgetFamily,
         colorScheme: ColorScheme

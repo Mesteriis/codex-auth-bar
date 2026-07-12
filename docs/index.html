@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="A native macOS menu-bar app for switching Codex accounts and monitoring usage limits.">
+  <meta name="theme-color" content="#191d22">
+  <title>Codex Auth Bar — accounts and limits in the macOS menu bar</title>
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="nav shell">
+    <a class="brand" href="#top" aria-label="Codex Auth Bar home">
+      <span class="brand-mark" aria-hidden="true"></span>
+      Codex Auth Bar
+    </a>
+    <nav aria-label="Primary navigation">
+      <a href="#features">Features</a>
+      <a href="#widgets">Widgets</a>
+      <a href="https://github.com/Mesteriis/codex-auth-bar">GitHub</a>
+    </nav>
+  </header>
+
+  <main id="top">
+    <section class="hero shell">
+      <div class="hero-copy">
+        <p class="eyebrow">Native SwiftUI · macOS 14+</p>
+        <h1>Every Codex<br>account.<br><span>One menu-bar<br>icon.</span></h1>
+        <p class="lede">Switch safely, track 5-hour and weekly limits, launch CLI profiles, and keep every account visible in native macOS widgets.</p>
+        <div class="actions">
+          <a class="button primary" href="https://github.com/Mesteriis/codex-auth-bar">View on GitHub</a>
+          <a class="button secondary" href="https://github.com/Mesteriis/codex-auth-bar#build-from-source">Build from source</a>
+        </div>
+        <p class="release-note">Developer ID release candidate is being prepared. Source is available now under MIT.</p>
+      </div>
+      <figure class="hero-visual">
+        <img src="qa/widget-small.png" alt="Small Codex Auth Bar widget showing 5-hour and weekly limits">
+      </figure>
+    </section>
+
+    <section id="features" class="section shell">
+      <div class="section-heading">
+        <p class="eyebrow">Designed for daily use</p>
+        <h2>Fast at the surface.<br>Careful underneath.</h2>
+      </div>
+      <div class="feature-grid">
+        <article><span>01</span><h3>Switch & Restart</h3><p>Close Codex gracefully, replace auth atomically, and reopen with recovery if anything fails.</p></article>
+        <article><span>02</span><h3>Usage at a glance</h3><p>See 5h and weekly availability across every managed account without opening another window.</p></article>
+        <article><span>03</span><h3>Independent profiles</h3><p>Discover and launch named Codex CLI configuration profiles without rewriting your base config.</p></article>
+        <article><span>04</span><h3>Local-first safety</h3><p>No analytics or backend. Private file modes, backups, a transaction journal, and credential-free widgets.</p></article>
+      </div>
+    </section>
+
+    <section id="widgets" class="section widgets shell">
+      <div class="section-heading compact">
+        <p class="eyebrow">WidgetKit, built in</p>
+        <h2>Your account ledger,<br>always on the desktop.</h2>
+        <p>Small for one active account, medium for a quick comparison, and large for the complete account roster.</p>
+      </div>
+      <div class="widget-gallery">
+        <img class="medium" src="qa/widget-medium.png" alt="Medium Codex Auth Bar widget showing three accounts">
+        <img class="large" src="qa/widget-large.png" alt="Large Codex Auth Bar widget showing a full account ledger">
+      </div>
+    </section>
+
+    <section class="security shell">
+      <p class="eyebrow">Open source and inspectable</p>
+      <h2>Credentials stay in your Codex home.</h2>
+      <p>Codex Auth Bar has no analytics, advertising, or external backend. Remote usage refresh can be disabled, and the widget process never receives credentials or network access.</p>
+      <div class="actions">
+        <a class="button secondary" href="https://github.com/Mesteriis/codex-auth-bar/blob/main/docs/security.md">Read the security model</a>
+        <a class="button secondary" href="https://github.com/Mesteriis/codex-auth-bar/blob/main/README.ru.md">Читать по-русски</a>
+      </div>
+    </section>
+  </main>
+
+  <footer class="shell">
+    <p>MIT licensed. Inspired by Loongphy/codex-auth. Not affiliated with OpenAI.</p>
+    <a href="https://github.com/Mesteriis/codex-auth-bar">Mesteriis/codex-auth-bar</a>
+  </footer>
+</body>
+</html>
