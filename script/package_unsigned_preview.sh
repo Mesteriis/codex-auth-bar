@@ -65,7 +65,10 @@ hdiutil create \
 
 hdiutil verify "$DMG"
 unzip -tq "$ZIP"
-shasum -a 256 "$DMG" >"$DMG.sha256"
-shasum -a 256 "$ZIP" >"$ZIP.sha256"
+(
+  cd "$DIST"
+  shasum -a 256 "$(basename "$DMG")" >"$(basename "$DMG").sha256"
+  shasum -a 256 "$(basename "$ZIP")" >"$(basename "$ZIP").sha256"
+)
 
 printf 'Unsigned preview created:\n%s\n%s\n' "$DMG" "$ZIP"
